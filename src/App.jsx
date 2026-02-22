@@ -41,6 +41,18 @@ import {
   VintageSectionIndicator,
 } from './components/vintage';
 
+// Cyberpunk theme components
+import {
+  CyberpunkHeader,
+  CyberpunkHero,
+  CyberpunkAbout,
+  CyberpunkExperience,
+  CyberpunkSkills,
+  CyberpunkProjects,
+  CyberpunkContact,
+  CyberpunkSectionIndicator,
+} from './components/cyberpunk';
+
 function JapaneseLayout({ darkMode, toggleMode }) {
   return (
     <>
@@ -101,6 +113,26 @@ function VintageLayout({ darkMode, toggleMode }) {
   );
 }
 
+function CyberpunkLayout({ darkMode, toggleMode }) {
+  return (
+    <>
+      <CyberpunkSectionIndicator />
+      <Box sx={{ minHeight: '100vh', position: 'relative', overflowX: 'hidden' }}>
+        <CyberpunkHeader darkMode={darkMode} toggleTheme={toggleMode} />
+        <Box id="hero">
+          <CyberpunkHero />
+        </Box>
+        <CyberpunkAbout />
+        <CyberpunkExperience />
+        <CyberpunkSkills />
+        <CyberpunkProjects />
+        <ThemeGallery />
+        <CyberpunkContact />
+      </Box>
+    </>
+  );
+}
+
 function AppContent() {
   const { mode, toggleMode, themeId } = useAestheticTheme();
   const darkMode = mode === 'dark';
@@ -147,6 +179,8 @@ function AppContent() {
         <SpaceLayout darkMode={darkMode} toggleMode={toggleMode} />
       ) : themeId === 'vintage' ? (
         <VintageLayout darkMode={darkMode} toggleMode={toggleMode} />
+      ) : themeId === 'cyberpunk' ? (
+        <CyberpunkLayout darkMode={darkMode} toggleMode={toggleMode} />
       ) : (
         <JapaneseLayout darkMode={darkMode} toggleMode={toggleMode} />
       )}

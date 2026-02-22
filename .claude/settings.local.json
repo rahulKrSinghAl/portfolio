@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(ls -la \"D:\\\\portfolio\\\\portfolio-site\\\\src\\\\components\\\\vintage\"\" 2>/dev/null || ls -la \"D:/portfolio/portfolio-site/src/components/vintage/\" 2>/dev/null || echo \"Directory not found \")"
     ]
   }
 }
