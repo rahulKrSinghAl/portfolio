@@ -5,7 +5,7 @@ import cyberpunkTheme from './cyberpunk';
 
 export const themeList = [spaceTheme, japaneseTheme, vintageTheme, cyberpunkTheme];
 
-export const defaultThemeId = 'space';
+export const defaultThemeId = 'cyberpunk';
 
 export function getAestheticThemeById(id) {
   return themeList.find((t) => t.id === id) || themeList[0];
