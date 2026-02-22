@@ -2,245 +2,217 @@ import { Box, Container, Typography, Card, CardContent, Stack } from '@mui/mater
 import { BusinessCenter } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import Tilt from 'react-parallax-tilt';
 import { useTheme, keyframes } from '@mui/system';
 import { experience } from '../../../data';
 import { usePrefersReducedMotion } from '../../../hooks/usePrefersReducedMotion';
 
-// ---------------------------------------------------------------------------
-// Framer-motion wrappers
-// ---------------------------------------------------------------------------
-
-const MotionCard = motion.create(Card);
 const MotionBox = motion.create(Box);
+const MotionCard = motion.create(Card);
 
-// ---------------------------------------------------------------------------
-// Keyframes
-// ---------------------------------------------------------------------------
+/* ------------------------------------------------------------------ */
+/*  Keyframes                                                          */
+/* ------------------------------------------------------------------ */
 
-const pulseGlow = (glowColor) => keyframes`
-  0%   { box-shadow: 0 0 4px 1px ${glowColor}; }
-  50%  { box-shadow: 0 0 12px 4px ${glowColor}; }
-  100% { box-shadow: 0 0 4px 1px ${glowColor}; }
+const pathDraw = keyframes`
+  0%   { stroke-dashoffset: 2000; }
+  100% { stroke-dashoffset: 0; }
 `;
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
+const craftMove = keyframes`
+  0%   { offset-distance: 0%; }
+  100% { offset-distance: 100%; }
+`;
 
-/**
- * Converts a period string like "03/2023 - Present" into
- * "MISSION // 03.2023 - PRESENT".
- */
+/* ------------------------------------------------------------------ */
+/*  Helpers                                                            */
+/* ------------------------------------------------------------------ */
+
 function formatMissionTimestamp(period) {
-  const formatted = period
-    .replace(/\//g, '.')
-    .toUpperCase();
-  return `MISSION // ${formatted}`;
+  return `MISSION // ${period.replace(/\//g, '.').toUpperCase()}`;
 }
 
-// ---------------------------------------------------------------------------
-// Styles factory
-// ---------------------------------------------------------------------------
+/* ------------------------------------------------------------------ */
+/*  Horizontal Flight Path (SVG)                                       */
+/* ------------------------------------------------------------------ */
 
-function getStyles(theme) {
-  const { glow, typography, animations, glassEffect, spacing } = theme.custom;
+function FlightPath({ count, color, reducedMotion, isDark, glow }) {
+  // Generates a sinusoidal path across the width
+  const width = 1200;
+  const height = 400;
+  const midY = height / 2;
+  const amplitude = 120;
+  const segWidth = width / (count - 1 || 1);
 
-  return {
-    section: {
-      py: { xs: spacing.xxl, md: spacing.section },
-      position: 'relative',
-    },
+  // Create smooth sinusoidal curve
+  let pathD = `M 0 ${midY}`;
+  for (let i = 0; i < count; i++) {
+    const x = i * segWidth;
+    const nextX = Math.min((i + 1) * segWidth, width);
+    const controlX = (x + nextX) / 2;
+    const y = midY + (i % 2 === 0 ? -amplitude : amplitude);
+    const nextY = midY + ((i + 1) % 2 === 0 ? -amplitude : amplitude);
+    if (i === 0) {
+      pathD += ` C ${controlX} ${y}, ${controlX} ${y}, ${nextX} ${midY + ((i + 1) % 2 === 0 ? -amplitude : amplitude)}`;
+    } else {
+      pathD += ` S ${controlX} ${nextY}, ${nextX} ${nextY}`;
+    }
+  }
 
-    /* ---- Header ---- */
-    headerStack: {
-      mb: spacing.xxl,
-    },
-    headerIcon: {
-      color: 'primary.main',
-      fontSize: 40,
-      filter: `drop-shadow(0 0 6px ${glow.primaryGlow(0.4)})`,
-    },
-    heading: {
-      fontWeight: typography.weights.bold,
-      background: theme.palette.gradient?.primary || theme.palette.primary.main,
-      backgroundClip: 'text',
-      WebkitBackgroundClip: 'text',
-      WebkitTextFillColor: 'transparent',
-      letterSpacing: typography.spacing.extraLoose,
-    },
-    headingSub: {
-      fontWeight: typography.weights.medium,
-      color: 'text.secondary',
-      letterSpacing: typography.spacing.loose,
-    },
+  // Node positions (at each experience point)
+  const nodes = experience.map((_, i) => {
+    const x = i * segWidth;
+    const y = midY + (i % 2 === 0 ? -amplitude : amplitude);
+    return { x, y };
+  });
 
-    /* ---- Timeline spine ---- */
-    timelineWrapper: {
-      position: 'relative',
-      pl: { xs: 4, sm: 6 },
-    },
-    timelineLine: {
-      position: 'absolute',
-      left: { xs: 11, sm: 15 },
-      top: 0,
-      width: 2,
-      background: `linear-gradient(180deg, ${glow.primaryGlow(0.6)} 0%, ${glow.primaryGlow(0.15)} 100%)`,
-      boxShadow: `0 0 8px ${glow.primaryGlow(0.3)}, 0 0 20px ${glow.primaryGlow(0.1)}`,
-      transformOrigin: 'top',
-    },
+  return (
+    <Box
+      sx={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        pointerEvents: 'none',
+        display: { xs: 'none', md: 'block' },
+      }}
+    >
+      <svg
+        width="100%"
+        height="100%"
+        viewBox={`0 0 ${width} ${height}`}
+        fill="none"
+        preserveAspectRatio="none"
+        style={{ position: 'absolute', inset: 0 }}
+      >
+        {/* Flight path line */}
+        <path
+          d={pathD}
+          stroke={color}
+          strokeWidth="2"
+          fill="none"
+          opacity={isDark ? 0.2 : 0.15}
+          strokeDasharray="2000"
+          style={{
+            animation: reducedMotion ? 'none' : `${pathDraw} 2s ease-out forwards`,
+          }}
+        />
 
-    /* ---- Timeline dot (checkpoint node) ---- */
-    timelineDot: {
-      position: 'absolute',
-      left: { xs: -28, sm: -36 },
-      top: 28,
-      width: 12,
-      height: 12,
-      borderRadius: '50%',
-      bgcolor: 'primary.main',
-      border: '2px solid',
-      borderColor: 'background.default',
-      zIndex: 2,
-      cursor: 'pointer',
-      transition: `box-shadow ${animations.duration.normal}s ${animations.easing.default}`,
-      '&:hover': {
-        animation: `${pulseGlow(glow.primaryGlow(0.6))} 1.4s ease-in-out infinite`,
-      },
-    },
-
-    /* ---- Connector line (dot -> card) ---- */
-    connectorLine: {
-      position: 'absolute',
-      left: { xs: -16, sm: -24 },
-      top: 33,
-      width: { xs: 16, sm: 24 },
-      height: 2,
-      background: `linear-gradient(90deg, ${glow.primaryGlow(0.5)}, ${glow.primaryGlow(0.1)})`,
-    },
-
-    /* ---- Card ---- */
-    card: {
-      position: 'relative',
-      border: '1px solid',
-      borderColor: theme.palette.glass.border,
-      borderRadius: '6px',
-      background: theme.palette.glass.background,
-      backdropFilter: glassEffect.blur,
-      WebkitBackdropFilter: glassEffect.blur,
-      boxShadow: theme.palette.glass.shadow,
-      transition: `transform ${animations.duration.normal}s ${animations.easing.default},
-                   border-color ${animations.duration.normal}s ${animations.easing.default},
-                   box-shadow ${animations.duration.normal}s ${animations.easing.default}`,
-      '&:hover': {
-        transform: 'translateY(-2px)',
-        borderColor: glow.primaryGlow(0.25),
-        boxShadow: `0 12px 40px ${glow.primaryGlow(0.2)}, 0 0 24px ${glow.primaryGlow(0.08)}`,
-      },
-    },
-    cardContent: {
-      p: { xs: spacing.md, md: spacing.lg },
-    },
-
-    /* ---- Card inner elements ---- */
-    jobTitle: {
-      fontWeight: typography.weights.bold,
-      mb: 0.5,
-      color: 'text.primary',
-    },
-    companyName: {
-      fontWeight: typography.weights.semiBold,
-      color: 'primary.main',
-      letterSpacing: typography.spacing.relaxed,
-    },
-    missionTimestamp: {
-      fontFamily: typography.fonts.mono,
-      fontSize: '0.75rem',
-      fontWeight: typography.weights.medium,
-      color: 'primary.main',
-      letterSpacing: typography.spacing.relaxed,
-      textTransform: 'uppercase',
-      mt: 1,
-      mb: 0.5,
-    },
-    jobType: {
-      fontStyle: 'italic',
-      color: 'text.secondary',
-      mb: spacing.sm,
-    },
-
-    /* ---- Achievement bullets ---- */
-    bulletMarker: {
-      width: 6,
-      height: 6,
-      mt: '9px',
-      flexShrink: 0,
-      bgcolor: 'primary.main',
-      clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
-    },
-    bulletText: {
-      color: 'text.secondary',
-    },
-  };
+        {/* Orbital station nodes */}
+        {nodes.map((node, i) => (
+          <g key={i}>
+            <circle
+              cx={node.x}
+              cy={node.y}
+              r="16"
+              stroke={color}
+              strokeWidth="1.5"
+              fill="none"
+              opacity="0.3"
+            />
+            <circle
+              cx={node.x}
+              cy={node.y}
+              r="5"
+              fill={color}
+              opacity="0.6"
+            />
+            {/* Outer ring */}
+            <circle
+              cx={node.x}
+              cy={node.y}
+              r="24"
+              stroke={color}
+              strokeWidth="0.5"
+              fill="none"
+              opacity="0.1"
+              strokeDasharray="4 4"
+            />
+          </g>
+        ))}
+      </svg>
+    </Box>
+  );
 }
 
-// ---------------------------------------------------------------------------
-// SpaceExperience component
-// ---------------------------------------------------------------------------
+/* ------------------------------------------------------------------ */
+/*  Mobile Orbital Rail                                                */
+/* ------------------------------------------------------------------ */
+
+function MobileOrbitalRail({ color, isDark, glow }) {
+  return (
+    <Box
+      sx={{
+        position: 'absolute',
+        left: 16,
+        top: 0,
+        bottom: 0,
+        width: 2,
+        display: { xs: 'block', md: 'none' },
+      }}
+    >
+      <Box
+        sx={{
+          width: '100%',
+          height: '100%',
+          background: `linear-gradient(180deg, ${color}, ${isDark ? glow.primaryGlow(0.1) : 'transparent'})`,
+          opacity: 0.2,
+        }}
+      />
+    </Box>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  SpaceExperience                                                    */
+/* ------------------------------------------------------------------ */
 
 export default function SpaceExperience() {
   const theme = useTheme();
-  const styles = getStyles(theme);
   const prefersReducedMotion = usePrefersReducedMotion();
+  const { glow, typography, animations, glassEffect, spacing } = theme.custom;
+  const isDark = theme.palette.mode === 'dark';
+  const glass = theme.palette.glass;
+  const mono = typography.fonts.mono;
 
-  const { ref: timelineRef, inView: timelineInView } = useInView({
+  const { ref: pathRef, inView: pathInView } = useInView({
     triggerOnce: true,
-    threshold: 0.15,
+    threshold: 0.1,
   });
 
-  // -- Animation variants --------------------------------------------------
-
-  const containerVariants = {
-    hidden: { opacity: 1 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: prefersReducedMotion ? 0 : 0.25,
-      },
-    },
-  };
-
+  /* ---- Animation variants ---- */
   const cardVariants = {
-    hidden: {
-      opacity: 0,
-      y: prefersReducedMotion ? 0 : 40,
-      scale: prefersReducedMotion ? 1 : 0.97,
-    },
+    hidden: { opacity: 0, y: prefersReducedMotion ? 0 : 40, scale: prefersReducedMotion ? 1 : 0.97 },
     visible: {
       opacity: 1,
       y: 0,
       scale: 1,
       transition: {
-        duration: prefersReducedMotion ? 0 : theme.custom.animations.duration.slow,
-        ease: theme.custom.animations.easing.easeOut,
+        duration: prefersReducedMotion ? 0 : animations.duration.slow,
+        ease: animations.easing.easeOut,
       },
     },
   };
 
-  const bulletVariants = {
-    hidden: { opacity: 0, x: prefersReducedMotion ? 0 : -12 },
-    visible: (i) => ({
+  const stagger = {
+    hidden: { opacity: 1 },
+    visible: {
       opacity: 1,
-      x: 0,
-      transition: {
-        delay: prefersReducedMotion ? 0 : i * 0.08,
-        duration: prefersReducedMotion ? 0 : theme.custom.animations.duration.normal,
-      },
-    }),
+      transition: { staggerChildren: prefersReducedMotion ? 0 : 0.25 },
+    },
+  };
+
+  const glassPanel = {
+    background: glass.background,
+    border: `1px solid ${glass.border}`,
+    backdropFilter: glassEffect.blur,
+    WebkitBackdropFilter: glassEffect.blur,
+    borderRadius: '6px',
+    boxShadow: glass.shadow,
   };
 
   return (
-    <Box component="section" id="experience" sx={styles.section}>
+    <Box component="section" id="experience" sx={{ py: { xs: spacing.xxl, md: spacing.section }, position: 'relative' }}>
       <Container maxWidth="lg" sx={{ position: 'relative' }}>
         {/* ---- Section header ---- */}
         <Stack
@@ -248,105 +220,213 @@ export default function SpaceExperience() {
           alignItems="center"
           justifyContent="center"
           spacing={2}
-          sx={styles.headerStack}
+          sx={{ mb: spacing.xxl }}
         >
-          <BusinessCenter sx={styles.headerIcon} />
+          <BusinessCenter
+            sx={{
+              color: 'primary.main',
+              fontSize: 40,
+              filter: `drop-shadow(0 0 6px ${glow.primaryGlow(0.4)})`,
+            }}
+          />
           <Box>
-            <Typography variant="h2" sx={styles.heading}>
+            <Typography
+              variant="h2"
+              sx={{
+                fontWeight: typography.weights.bold,
+                background: theme.palette.gradient?.primary || theme.palette.primary.main,
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                letterSpacing: typography.spacing.extraLoose,
+              }}
+            >
               FLIGHT LOG
             </Typography>
-            <Typography variant="h6" sx={styles.headingSub}>
-              Trajectory
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: typography.weights.medium,
+                color: 'text.secondary',
+                letterSpacing: typography.spacing.loose,
+              }}
+            >
+              Orbital Trajectory
             </Typography>
           </Box>
         </Stack>
 
-        {/* ---- Timeline ---- */}
-        <Box ref={timelineRef} sx={styles.timelineWrapper}>
-          {/* Animated vertical glow line */}
-          <MotionBox
-            initial={{ height: 0 }}
-            animate={timelineInView ? { height: '100%' } : { height: 0 }}
-            transition={{
-              duration: prefersReducedMotion ? 0 : 1.5,
-              ease: theme.custom.animations.easing.easeOut,
-            }}
-            sx={styles.timelineLine}
+        {/* ============================================================ */}
+        {/* Orbital Trajectory Map                                       */}
+        {/* ============================================================ */}
+        <Box ref={pathRef} sx={{ position: 'relative' }}>
+          {/* SVG flight path (desktop) */}
+          <FlightPath
+            count={experience.length}
+            color={theme.palette.primary.main}
+            reducedMotion={prefersReducedMotion}
+            isDark={isDark}
+            glow={glow}
           />
 
-          {/* Staggered cards container */}
+          {/* Mobile orbital rail */}
+          <MobileOrbitalRail color={theme.palette.primary.main} isDark={isDark} glow={glow} />
+
+          {/* Experience cards — horizontal on desktop, vertical on mobile */}
           <Box
             component={motion.div}
-            variants={containerVariants}
+            variants={stagger}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: '-80px' }}
           >
-            <Stack spacing={5}>
-              {experience.map((job, index) => (
-                <Box key={index} sx={{ position: 'relative' }}>
-                  {/* Checkpoint node (dot) */}
-                  <Box sx={styles.timelineDot} />
+            {/* Desktop: horizontal row with alternating top/bottom */}
+            <Stack
+              direction={{ xs: 'column', md: 'row' }}
+              spacing={{ xs: 4, md: 3 }}
+              alignItems={{ md: 'stretch' }}
+              sx={{
+                // Mobile: left padding for rail
+                pl: { xs: 5, md: 0 },
+                // Desktop: min-height to accommodate the sinusoidal layout
+                minHeight: { md: 500 },
+                position: 'relative',
+              }}
+            >
+              {experience.map((job, index) => {
+                const isAbove = index % 2 === 0;
 
-                  {/* Horizontal connector */}
-                  <Box sx={styles.connectorLine} />
-
-                  {/* Experience card */}
-                  <Tilt
-                    tiltMaxAngleX={2}
-                    tiltMaxAngleY={2}
-                    tiltReverse
-                    glareEnable={false}
+                return (
+                  <Box
+                    key={index}
+                    sx={{
+                      flex: { md: 1 },
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: { md: isAbove ? 'flex-start' : 'flex-end' },
+                      position: 'relative',
+                    }}
                   >
+                    {/* Mobile: orbital node on the rail */}
+                    <Box
+                      sx={{
+                        display: { xs: 'block', md: 'none' },
+                        position: 'absolute',
+                        left: -37,
+                        top: 20,
+                        width: 12,
+                        height: 12,
+                        borderRadius: '50%',
+                        bgcolor: 'primary.main',
+                        border: '2px solid',
+                        borderColor: 'background.default',
+                        zIndex: 2,
+                        boxShadow: isDark ? `0 0 8px ${glow.primaryGlow(0.4)}` : 'none',
+                      }}
+                    />
+
+                    {/* Desktop: date label along path */}
+                    <Typography
+                      sx={{
+                        display: { xs: 'none', md: 'block' },
+                        fontFamily: mono,
+                        fontSize: '0.6rem',
+                        color: 'primary.main',
+                        letterSpacing: '0.1em',
+                        opacity: 0.5,
+                        textAlign: 'center',
+                        mb: isAbove ? 1 : 0,
+                        mt: isAbove ? 0 : 1,
+                        order: isAbove ? 0 : 2,
+                      }}
+                    >
+                      {job.period.replace(/\//g, '.')}
+                    </Typography>
+
+                    {/* Card */}
                     <MotionCard
                       variants={cardVariants}
                       elevation={0}
-                      sx={styles.card}
+                      sx={{
+                        ...glassPanel,
+                        transition: `border-color ${animations.duration.normal}s, box-shadow ${animations.duration.normal}s`,
+                        '&:hover': {
+                          borderColor: glow.primaryGlow(0.25),
+                          boxShadow: `0 8px 32px ${glow.primaryGlow(0.15)}, 0 0 20px ${glow.primaryGlow(0.06)}`,
+                        },
+                        order: 1,
+                      }}
                     >
-                      <CardContent sx={styles.cardContent}>
+                      <CardContent sx={{ p: { xs: spacing.md, md: spacing.md }, '&:last-child': { pb: { xs: spacing.md, md: spacing.md } } }}>
                         {/* Title + Company */}
-                        <Typography variant="h5" sx={styles.jobTitle}>
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            fontWeight: typography.weights.bold,
+                            mb: 0.5,
+                            color: 'text.primary',
+                            fontSize: { xs: '1rem', md: '1.05rem' },
+                          }}
+                        >
                           {job.title}
                         </Typography>
-                        <Typography variant="h6" sx={styles.companyName}>
+                        <Typography
+                          sx={{
+                            fontWeight: typography.weights.semiBold,
+                            color: 'primary.main',
+                            letterSpacing: typography.spacing.relaxed,
+                            fontSize: '0.9rem',
+                          }}
+                        >
                           {job.company}
                         </Typography>
 
-                        {/* Mission timestamp */}
-                        <Typography sx={styles.missionTimestamp}>
+                        {/* Mission timestamp — mobile only (desktop shows along path) */}
+                        <Typography
+                          sx={{
+                            display: { xs: 'block', md: 'none' },
+                            fontFamily: mono,
+                            fontSize: '0.7rem',
+                            fontWeight: typography.weights.medium,
+                            color: 'primary.main',
+                            letterSpacing: typography.spacing.relaxed,
+                            textTransform: 'uppercase',
+                            mt: 1,
+                            mb: 0.5,
+                          }}
+                        >
                           {formatMissionTimestamp(job.period)}
                         </Typography>
 
-                        {/* Job type */}
-                        <Typography variant="body2" sx={styles.jobType}>
+                        <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'text.secondary', mb: 1.5, fontSize: '0.8rem' }}>
                           {job.type}
                         </Typography>
 
                         {/* Achievement bullets */}
-                        <Stack spacing={1.5}>
+                        <Stack spacing={1}>
                           {job.achievements.map((achievement, idx) => (
-                            <MotionBox
-                              key={idx}
-                              variants={bulletVariants}
-                              custom={idx}
-                              initial="hidden"
-                              whileInView="visible"
-                              viewport={{ once: true }}
-                            >
-                              <Stack direction="row" spacing={1.5} alignItems="flex-start">
-                                <Box sx={styles.bulletMarker} />
-                                <Typography variant="body1" sx={styles.bulletText}>
-                                  {achievement}
-                                </Typography>
-                              </Stack>
-                            </MotionBox>
+                            <Stack key={idx} direction="row" spacing={1} alignItems="flex-start">
+                              <Box
+                                sx={{
+                                  width: 5,
+                                  height: 5,
+                                  mt: '8px',
+                                  flexShrink: 0,
+                                  bgcolor: 'primary.main',
+                                  clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+                                }}
+                              />
+                              <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.82rem', lineHeight: 1.7 }}>
+                                {achievement}
+                              </Typography>
+                            </Stack>
                           ))}
                         </Stack>
                       </CardContent>
                     </MotionCard>
-                  </Tilt>
-                </Box>
-              ))}
+                  </Box>
+                );
+              })}
             </Stack>
           </Box>
         </Box>

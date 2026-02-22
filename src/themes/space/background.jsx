@@ -1,61 +1,102 @@
 import { Box } from '@mui/material';
+import { keyframes } from '@mui/system';
+
+const twinkle1 = keyframes`
+  0%, 100% { opacity: 0.2; }
+  50%      { opacity: 0.9; }
+`;
+
+const twinkle2 = keyframes`
+  0%, 100% { opacity: 0.15; }
+  40%      { opacity: 0.8; }
+  70%      { opacity: 0.3; }
+`;
+
+const twinkle3 = keyframes`
+  0%, 100% { opacity: 0.3; }
+  30%      { opacity: 1; }
+  60%      { opacity: 0.4; }
+`;
+
+function generateStars(count, maxX, maxY, seed = 0) {
+  const stars = [];
+  for (let i = 0; i < count; i++) {
+    const x = (i * 7919 + 1031 + seed * 3571) % maxX;
+    const y = (i * 6271 + 2053 + seed * 4409) % maxY;
+    const size = i % 4 === 0 ? 1.5 : i % 7 === 0 ? 2 : 1;
+    const brightness = 0.25 + (i % 5) * 0.12;
+    stars.push(`${x}px ${y}px 0 ${size > 1 ? size - 1 : 0}px rgba(255,255,255,${brightness})`);
+  }
+  return stars.join(', ');
+}
+
+const STARS_STATIC = generateStars(200, 2000, 5000, 0);
+const STARS_TWINKLE_A = generateStars(50, 2000, 5000, 1);
+const STARS_TWINKLE_B = generateStars(50, 2000, 5000, 2);
+const STARS_TWINKLE_C = generateStars(25, 2000, 5000, 3);
+
+const starLayer = {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  width: '1px',
+  height: '1px',
+  zIndex: 0,
+  pointerEvents: 'none',
+};
 
 export default function SpaceBackground() {
   return (
     <>
-      {/* Base Background Color */}
+      {/* Base background */}
       <Box
         sx={{
           position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
+          inset: 0,
           bgcolor: 'background.default',
           zIndex: 0,
         }}
       />
 
-      {/* Space Elements Background */}
+      {/* Static stars */}
       <Box
-        component="img"
-        src="/space-elements.png"
-        alt=""
         sx={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-          transform: 'translate(-50%, -50%)',
-          opacity: (theme) => (theme.palette.mode === 'dark' ? 0.05 : 0.08),
-          pointerEvents: 'none',
-          zIndex: 1,
-          filter: (theme) =>
-            theme.palette.mode === 'dark'
-              ? 'invert(1) sepia(1) saturate(2) hue-rotate(160deg) brightness(0.6)'
-              : 'sepia(1) saturate(1.5) hue-rotate(160deg) brightness(0.5)',
-          mixBlendMode: (theme) =>
-            theme.palette.mode === 'dark' ? 'screen' : 'multiply',
+          ...starLayer,
+          boxShadow: STARS_STATIC,
+          display: (theme) => (theme.palette.mode === 'dark' ? 'block' : 'none'),
         }}
       />
 
-      {/* Subtle Grid */}
+      {/* Twinkle group A */}
       <Box
         sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          opacity: 0.02,
-          backgroundImage: (theme) => {
-            const glow = theme.custom.glow.primaryGlow(0.3);
-            return `linear-gradient(${glow} 1px, transparent 1px), linear-gradient(90deg, ${glow} 1px, transparent 1px)`;
-          },
-          backgroundSize: '80px 80px',
-          zIndex: 0,
+          ...starLayer,
+          boxShadow: STARS_TWINKLE_A,
+          animation: (theme) =>
+            theme.palette.mode === 'dark' ? `${twinkle1} 3s ease-in-out infinite` : 'none',
+          display: (theme) => (theme.palette.mode === 'dark' ? 'block' : 'none'),
+        }}
+      />
+
+      {/* Twinkle group B */}
+      <Box
+        sx={{
+          ...starLayer,
+          boxShadow: STARS_TWINKLE_B,
+          animation: (theme) =>
+            theme.palette.mode === 'dark' ? `${twinkle2} 5s ease-in-out 1.5s infinite` : 'none',
+          display: (theme) => (theme.palette.mode === 'dark' ? 'block' : 'none'),
+        }}
+      />
+
+      {/* Twinkle group C */}
+      <Box
+        sx={{
+          ...starLayer,
+          boxShadow: STARS_TWINKLE_C,
+          animation: (theme) =>
+            theme.palette.mode === 'dark' ? `${twinkle3} 4s ease-in-out 0.8s infinite` : 'none',
+          display: (theme) => (theme.palette.mode === 'dark' ? 'block' : 'none'),
         }}
       />
     </>

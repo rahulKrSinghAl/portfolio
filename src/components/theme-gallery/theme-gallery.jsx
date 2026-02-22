@@ -1,5 +1,4 @@
 import { Box, Container, Typography, Grid, Chip, useTheme } from '@mui/material';
-import { Palette } from '@mui/icons-material';
 import { useAestheticTheme } from '../../context/AestheticThemeContext';
 import { themeList } from '../../themes';
 import { getSharedStyles, RevealOnScroll } from '../shared';
@@ -107,27 +106,6 @@ export default function ThemeGallery() {
       }}
     >
       <Container maxWidth="lg">
-        <RevealOnScroll>
-          <Box sx={{ mb: muiTheme.custom.spacing.xxl, textAlign: 'center' }}>
-            <Typography
-              variant="body2"
-              sx={{
-                color: 'primary.main',
-                fontWeight: muiTheme.custom.typography.weights.medium,
-                mb: muiTheme.custom.spacing.xs,
-                letterSpacing: muiTheme.custom.typography.spacing.extraLoose,
-                textTransform: 'uppercase',
-              }}
-            >
-              <Palette sx={{ mr: muiTheme.custom.spacing.xs, verticalAlign: 'middle' }} />
-              Themes
-            </Typography>
-            <Typography variant="h3">
-              Choose an Aesthetic
-            </Typography>
-          </Box>
-        </RevealOnScroll>
-
         <Grid container spacing={muiTheme.custom.spacing.md}>
           {themeList.map((t) => (
             <Grid size={{ xs: 12, sm: 6, md: 4 }} key={t.id} sx={{ display: 'flex' }}>

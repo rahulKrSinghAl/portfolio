@@ -1,25 +1,18 @@
-import { Box, Container, Typography, Chip, Stack, Paper, Grid } from '@mui/material';
-import { Code, Language, Construction } from '@mui/icons-material';
+import { Box, Container, Typography, Stack, Chip } from '@mui/material';
+import { Construction } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import Tilt from 'react-parallax-tilt';
 import { useTheme, keyframes } from '@mui/system';
 import { FaReact, FaHtml5, FaCss3Alt } from 'react-icons/fa';
 import { SiNextdotjs, SiRedux, SiMui, SiJavascript, SiTypescript } from 'react-icons/si';
 import { skills, languages } from '../../../data';
 import { usePrefersReducedMotion } from '../../../hooks/usePrefersReducedMotion';
 
-// ---------------------------------------------------------------------------
-// Motion wrappers
-// ---------------------------------------------------------------------------
-
 const MotionBox = motion.create(Box);
-const MotionPaper = motion.create(Paper);
-const MotionChip = motion.create(Chip);
 
-// ---------------------------------------------------------------------------
-// Skill icon map
-// ---------------------------------------------------------------------------
+/* ------------------------------------------------------------------ */
+/*  Skill icon map                                                     */
+/* ------------------------------------------------------------------ */
 
 const skillIcons = {
   React: FaReact,
@@ -32,307 +25,408 @@ const skillIcons = {
   TypeScript: SiTypescript,
 };
 
-// ---------------------------------------------------------------------------
-// Scanning beam keyframe
-// ---------------------------------------------------------------------------
+/* ------------------------------------------------------------------ */
+/*  Keyframes                                                          */
+/* ------------------------------------------------------------------ */
 
-const scanBeam = keyframes`
-  0% {
-    left: -8%;
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-  }
-  90% {
-    opacity: 1;
-  }
-  100% {
-    left: 108%;
-    opacity: 0;
-  }
+const radarSweep = keyframes`
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 `;
 
-// Glass panel base styles moved to component body to access theme
+const blipPulse = keyframes`
+  0%, 80%  { opacity: 0.5; transform: scale(1); }
+  90%      { opacity: 1; transform: scale(1.4); }
+  100%     { opacity: 0.5; transform: scale(1); }
+`;
 
-// ---------------------------------------------------------------------------
-// Corner bracket decoration component
-// ---------------------------------------------------------------------------
+/* ------------------------------------------------------------------ */
+/*  Radar skill positions — spread across the radar face               */
+/* ------------------------------------------------------------------ */
 
-function CornerBrackets({ color, prefersReducedMotion }) {
-  const corners = [
-    {
-      position: { top: 0, left: 0 },
-      border: { borderTop: '2px solid', borderLeft: '2px solid' },
-      radius: '4px 0 0 0',
-      initial: { opacity: 0, x: -20, y: -20 },
-      dotPosition: { top: 6, left: 6 },
-    },
-    {
-      position: { top: 0, right: 0 },
-      border: { borderTop: '2px solid', borderRight: '2px solid' },
-      radius: '0 4px 0 0',
-      initial: { opacity: 0, x: 20, y: -20 },
-      dotPosition: null,
-    },
-    {
-      position: { bottom: 0, left: 0 },
-      border: { borderBottom: '2px solid', borderLeft: '2px solid' },
-      radius: '0 0 0 4px',
-      initial: { opacity: 0, x: -20, y: 20 },
-      dotPosition: null,
-    },
-    {
-      position: { bottom: 0, right: 0 },
-      border: { borderBottom: '2px solid', borderRight: '2px solid' },
-      radius: '0 0 4px 0',
-      initial: { opacity: 0, x: 20, y: 20 },
-      dotPosition: { bottom: 6, right: 6 },
-    },
-  ];
+const skillPositions = [
+  { angle: 30, radius: 0.75 },
+  { angle: 85, radius: 0.55 },
+  { angle: 140, radius: 0.8 },
+  { angle: 210, radius: 0.6 },
+  { angle: 270, radius: 0.7 },
+  { angle: 330, radius: 0.5 },
+];
+
+/* ------------------------------------------------------------------ */
+/*  Radar Display                                                      */
+/* ------------------------------------------------------------------ */
+
+function RadarDisplay({ skills: frontendSkills, primaryColor, secondaryColor, isDark, glow, reducedMotion, mono, typography }) {
+  const radarSize = 320;
+  const center = radarSize / 2;
 
   return (
-    <>
-      {corners.map((corner, i) => (
-        <MotionBox
-          key={i}
-          initial={corner.initial}
-          whileInView={{ opacity: 1, x: 0, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: prefersReducedMotion ? 0 : 0.6 }}
+    <Box
+      sx={{
+        position: 'relative',
+        width: '100%',
+        maxWidth: radarSize,
+        aspectRatio: '1',
+        mx: 'auto',
+      }}
+    >
+      {/* SVG radar rings + crosshair */}
+      <svg
+        width="100%"
+        height="100%"
+        viewBox={`0 0 ${radarSize} ${radarSize}`}
+        fill="none"
+        style={{ position: 'absolute', inset: 0 }}
+      >
+        {/* Concentric rings */}
+        {[0.25, 0.5, 0.75, 1].map((r) => (
+          <circle
+            key={r}
+            cx={center}
+            cy={center}
+            r={center * r - 4}
+            stroke={primaryColor}
+            strokeWidth="0.5"
+            opacity={isDark ? 0.12 : 0.15}
+          />
+        ))}
+        {/* Crosshair lines */}
+        <line x1={center} y1={4} x2={center} y2={radarSize - 4} stroke={primaryColor} strokeWidth="0.5" opacity="0.08" />
+        <line x1={4} y1={center} x2={radarSize - 4} y2={center} stroke={primaryColor} strokeWidth="0.5" opacity="0.08" />
+        {/* Diagonal crosshairs */}
+        <line x1={center - center * 0.7} y1={center - center * 0.7} x2={center + center * 0.7} y2={center + center * 0.7} stroke={primaryColor} strokeWidth="0.3" opacity="0.05" />
+        <line x1={center + center * 0.7} y1={center - center * 0.7} x2={center - center * 0.7} y2={center + center * 0.7} stroke={primaryColor} strokeWidth="0.3" opacity="0.05" />
+      </svg>
+
+      {/* Animated rotating sweep line */}
+      {!reducedMotion && (
+        <Box
           sx={{
             position: 'absolute',
-            ...corner.position,
-            width: '50px',
-            height: '50px',
-            ...corner.border,
-            borderColor: color,
-            opacity: 0.25,
-            borderRadius: corner.radius,
-            pointerEvents: 'none',
-            ...(corner.dotPosition
-              ? {
-                  '&::after': {
-                    content: '""',
-                    position: 'absolute',
-                    ...corner.dotPosition,
-                    width: 4,
-                    height: 4,
-                    borderRadius: '50%',
-                    bgcolor: color,
-                    opacity: 0.6,
-                  },
-                }
-              : {}),
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            animation: `${radarSweep} 4s linear infinite`,
           }}
-        />
-      ))}
-    </>
+        >
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              width: '50%',
+              height: 2,
+              transformOrigin: '0 50%',
+              background: `linear-gradient(90deg, ${primaryColor}, transparent)`,
+              opacity: 0.3,
+            }}
+          />
+          {/* Sweep cone/gradient */}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              width: '50%',
+              height: '50%',
+              transformOrigin: '0 0',
+              background: `conic-gradient(from 0deg, ${glow.primaryGlow(0.08)}, transparent 30deg)`,
+              borderRadius: '0 100% 0 0',
+            }}
+          />
+        </Box>
+      )}
+
+      {/* Skill blips positioned on radar */}
+      {frontendSkills.map((skill, i) => {
+        const pos = skillPositions[i] || { angle: i * 60, radius: 0.6 };
+        const rad = (pos.angle * Math.PI) / 180;
+        const x = center + (center - 20) * pos.radius * Math.cos(rad);
+        const y = center + (center - 20) * pos.radius * Math.sin(rad);
+        const IconComponent = skillIcons[skill];
+
+        return (
+          <Box
+            key={skill}
+            sx={{
+              position: 'absolute',
+              left: x,
+              top: y,
+              transform: 'translate(-50%, -50%)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 0.5,
+              zIndex: 2,
+            }}
+          >
+            {/* Blip dot */}
+            <Box
+              sx={{
+                width: 10,
+                height: 10,
+                borderRadius: '50%',
+                bgcolor: primaryColor,
+                boxShadow: isDark ? `0 0 8px ${primaryColor}, 0 0 16px ${glow.primaryGlow(0.3)}` : `0 0 4px ${primaryColor}`,
+                animation: reducedMotion
+                  ? 'none'
+                  : `${blipPulse} 4s ease-in-out ${i * 0.6}s infinite`,
+              }}
+            />
+            {/* Label */}
+            <Stack
+              direction="row"
+              spacing={0.5}
+              alignItems="center"
+              sx={{
+                bgcolor: glow.primaryGlow(0.08),
+                border: `1px solid ${glow.primaryGlow(0.15)}`,
+                borderRadius: '3px',
+                px: 0.8,
+                py: 0.3,
+                backdropFilter: 'blur(8px)',
+              }}
+            >
+              {IconComponent && (
+                <Box sx={{ display: 'flex', color: primaryColor, fontSize: 12 }}>
+                  <IconComponent size={12} />
+                </Box>
+              )}
+              <Typography
+                sx={{
+                  fontFamily: mono,
+                  fontSize: '0.55rem',
+                  fontWeight: typography.weights.semiBold,
+                  color: 'text.primary',
+                  letterSpacing: '0.05em',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {skill}
+              </Typography>
+            </Stack>
+          </Box>
+        );
+      })}
+
+      {/* Center dot */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: 6,
+          height: 6,
+          borderRadius: '50%',
+          bgcolor: primaryColor,
+          boxShadow: `0 0 12px ${primaryColor}`,
+          zIndex: 3,
+        }}
+      />
+    </Box>
   );
 }
 
-// ---------------------------------------------------------------------------
-// SpaceSkills component
-// ---------------------------------------------------------------------------
+/* ------------------------------------------------------------------ */
+/*  Vertical Gauge Meter                                               */
+/* ------------------------------------------------------------------ */
+
+function VerticalGauge({ label, icon: IconComponent, color, fillPercent, inView, delay, reducedMotion, mono, typography, glow, isDark }) {
+  return (
+    <Stack alignItems="center" spacing={1} sx={{ width: 70 }}>
+      <Typography
+        sx={{
+          fontFamily: mono,
+          fontSize: '0.55rem',
+          fontWeight: typography.weights.bold,
+          color,
+          letterSpacing: '0.08em',
+          textAlign: 'center',
+        }}
+      >
+        {label}
+      </Typography>
+      {/* Gauge tube */}
+      <Box
+        sx={{
+          width: 40,
+          height: 160,
+          borderRadius: '4px',
+          border: `1px solid ${isDark ? glow.primaryGlow(0.12) : 'rgba(0,0,0,0.1)'}`,
+          bgcolor: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.04)',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Graduation marks */}
+        {[0.2, 0.4, 0.6, 0.8].map((pos) => (
+          <Box
+            key={pos}
+            sx={{
+              position: 'absolute',
+              bottom: `${pos * 100}%`,
+              left: 0,
+              right: 0,
+              height: '1px',
+              bgcolor: isDark ? glow.primaryGlow(0.08) : 'rgba(0,0,0,0.06)',
+            }}
+          />
+        ))}
+        {/* Fill */}
+        <MotionBox
+          initial={{ height: 0 }}
+          animate={inView ? { height: `${fillPercent}%` } : { height: 0 }}
+          transition={{
+            duration: reducedMotion ? 0 : 1.2,
+            delay: reducedMotion ? 0 : delay,
+            ease: 'easeOut',
+          }}
+          sx={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            background: `linear-gradient(to top, ${color}, ${color}88)`,
+            borderRadius: '0 0 3px 3px',
+            boxShadow: isDark ? `0 0 12px ${color}44` : 'none',
+          }}
+        />
+      </Box>
+      {/* Icon below */}
+      {IconComponent && (
+        <Box sx={{ color, display: 'flex' }}>
+          <IconComponent size={18} />
+        </Box>
+      )}
+    </Stack>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Signal Strength Bars                                               */
+/* ------------------------------------------------------------------ */
+
+function SignalBars({ name, level, proficiency, color, inView, delay, reducedMotion, mono, typography, isDark, glow }) {
+  const totalBars = 5;
+  const filledBars = Math.round((proficiency / 100) * totalBars);
+
+  return (
+    <Box sx={{ mb: 2.5 }}>
+      <Stack direction="row" justifyContent="space-between" alignItems="baseline" sx={{ mb: 1 }}>
+        <Typography
+          sx={{
+            fontWeight: typography.weights.medium,
+            fontSize: '0.9rem',
+            letterSpacing: typography.spacing.relaxed,
+            color: 'text.primary',
+          }}
+        >
+          {name}
+        </Typography>
+        <Typography
+          sx={{
+            fontFamily: mono,
+            fontSize: '0.65rem',
+            color: 'text.secondary',
+            letterSpacing: '0.05em',
+          }}
+        >
+          {level} // {proficiency}%
+        </Typography>
+      </Stack>
+      {/* Signal bars */}
+      <Stack direction="row" spacing={0.5} alignItems="flex-end">
+        {Array.from({ length: totalBars }).map((_, i) => {
+          const barHeight = 8 + i * 6;
+          const isFilled = i < filledBars;
+          return (
+            <MotionBox
+              key={i}
+              initial={{ opacity: 0, scaleY: 0 }}
+              animate={
+                inView
+                  ? { opacity: 1, scaleY: 1 }
+                  : { opacity: 0, scaleY: 0 }
+              }
+              transition={{
+                duration: reducedMotion ? 0 : 0.3,
+                delay: reducedMotion ? 0 : delay + i * 0.08,
+                ease: 'easeOut',
+              }}
+              sx={{
+                width: 16,
+                height: barHeight,
+                borderRadius: '2px',
+                bgcolor: isFilled
+                  ? color
+                  : isDark ? glow.primaryGlow(0.06) : 'rgba(0,0,0,0.06)',
+                boxShadow: isFilled && isDark ? `0 0 6px ${color}66` : 'none',
+                transformOrigin: 'bottom',
+              }}
+            />
+          );
+        })}
+      </Stack>
+    </Box>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  SpaceSkills main component                                         */
+/* ------------------------------------------------------------------ */
 
 export default function SpaceSkills() {
   const theme = useTheme();
   const prefersReducedMotion = usePrefersReducedMotion();
 
-  const { ref: languageBarsRef, inView: languageBarsInView } = useInView({
+  const { ref: gaugeRef, inView: gaugeInView } = useInView({
     triggerOnce: true,
-    threshold: 0.3,
+    threshold: 0.2,
   });
 
-  // Theme-aware colors
   const cyanMain = theme.palette.primary.main;
   const amberMain = theme.palette.secondary.main;
   const isDark = theme.palette.mode === 'dark';
-
-  // Glow helpers
-  const primaryGlow = theme.custom.glow.primaryGlow;
-  const secondaryGlow = theme.custom.glow.secondaryGlow;
+  const glow = theme.custom.glow;
   const glass = theme.palette.glass;
+  const { typography, animations, glassEffect, spacing } = theme.custom;
+  const mono = typography.fonts.mono;
 
-  // Glass panel base styles
   const glassPanel = {
-    p: { xs: 3, md: 4 },
-    height: '100%',
-    border: `1px solid ${glass.border}`,
-    borderRadius: '6px',
     background: glass.background,
-    backdropFilter: theme.custom.glassEffect.blur,
-    WebkitBackdropFilter: theme.custom.glassEffect.blur,
+    border: `1px solid ${glass.border}`,
+    backdropFilter: glassEffect.blur,
+    WebkitBackdropFilter: glassEffect.blur,
+    borderRadius: '6px',
     boxShadow: glass.shadow,
-    transition: 'border-color 0.35s ease, box-shadow 0.35s ease',
   };
 
-  // -------------------------------------------------------------------------
-  // Animation variants
-  // -------------------------------------------------------------------------
-
-  const containerVariants = {
-    hidden: { opacity: 1 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: prefersReducedMotion ? 0 : 0.1,
-      },
-    },
-  };
-
-  const chipVariants = {
-    hidden: { opacity: 0, scale: prefersReducedMotion ? 1 : 0.8 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      transition: {
-        duration: prefersReducedMotion ? 0 : 0.35,
-        ease: 'easeOut',
-      },
-    },
-  };
-
-  const panelVariants = {
+  /* ---- Animation variants ---- */
+  const fadeUp = {
     hidden: { opacity: 0, y: prefersReducedMotion ? 0 : 30 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: {
-        duration: prefersReducedMotion ? 0 : 0.7,
-        ease: 'easeOut',
-      },
+      transition: { duration: prefersReducedMotion ? 0 : 0.7, ease: 'easeOut' },
     },
   };
-
-  const headerVariants = {
-    hidden: { opacity: 0, y: prefersReducedMotion ? 0 : -20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: prefersReducedMotion ? 0 : 0.6,
-        ease: 'easeOut',
-      },
-    },
-  };
-
-  // -------------------------------------------------------------------------
-  // Chip styles
-  // -------------------------------------------------------------------------
-
-  const chipPrimary = {
-    py: 2.5,
-    px: 1,
-    borderRadius: '4px',
-    fontWeight: theme.custom.typography.weights.medium,
-    letterSpacing: theme.custom.typography.spacing.relaxed,
-    cursor: 'default',
-    bgcolor: isDark ? primaryGlow(0.1) : primaryGlow(0.08),
-    color: cyanMain,
-    border: '2px solid',
-    borderColor: cyanMain,
-    '& .MuiChip-icon': {
-      color: 'inherit',
-    },
-    '&:hover': {
-      bgcolor: cyanMain,
-      color: theme.palette.mode === 'dark' ? theme.palette.background.default : '#ffffff',
-    },
-    transition: `background-color 0.2s ease, color 0.2s ease`,
-  };
-
-  const chipSecondary = {
-    py: 2.5,
-    px: 1,
-    borderRadius: '4px',
-    fontWeight: theme.custom.typography.weights.medium,
-    letterSpacing: theme.custom.typography.spacing.relaxed,
-    cursor: 'default',
-    bgcolor: isDark ? secondaryGlow(0.1) : secondaryGlow(0.15),
-    color: amberMain,
-    border: '2px solid',
-    borderColor: amberMain,
-    '& .MuiChip-icon': {
-      color: 'inherit',
-    },
-    '&:hover': {
-      bgcolor: amberMain,
-      color: theme.palette.mode === 'dark' ? theme.palette.background.default : '#ffffff',
-    },
-    transition: `background-color 0.2s ease, color 0.2s ease`,
-  };
-
-  // -------------------------------------------------------------------------
-  // Progress bar styles
-  // -------------------------------------------------------------------------
-
-  const barTrack = {
-    width: '100%',
-    height: 10,
-    bgcolor: isDark ? theme.palette.background.paper : theme.palette.action.hover,
-    border: '1px solid',
-    borderColor: isDark ? primaryGlow(0.1) : theme.palette.divider,
-    borderRadius: '4px',
-    overflow: 'hidden',
-    position: 'relative',
-  };
-
-  const barFill = {
-    height: '100%',
-    background: `linear-gradient(90deg, ${cyanMain}, ${amberMain})`,
-    borderRadius: '4px',
-    position: 'relative',
-    overflow: 'hidden',
-    '&::after': {
-      content: '""',
-      position: 'absolute',
-      top: 0,
-      width: '12px',
-      height: '100%',
-      background: `radial-gradient(ellipse at center, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.4) 40%, transparent 70%)`,
-      filter: 'blur(1px)',
-      animation: prefersReducedMotion
-        ? 'none'
-        : `${scanBeam} 2.5s ease-in-out infinite`,
-    },
-  };
-
-  // -------------------------------------------------------------------------
-  // Render
-  // -------------------------------------------------------------------------
 
   return (
     <Box
       id="skills"
       sx={{
-        py: { xs: 8, md: 15 },
+        py: { xs: 8, md: spacing.section },
         position: 'relative',
         overflow: 'hidden',
       }}
     >
-      {/* Corner bracket decorations */}
-      <Box
-        sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          opacity: 0.4,
-          pointerEvents: 'none',
-        }}
-      >
-        <CornerBrackets
-          color={cyanMain}
-          prefersReducedMotion={prefersReducedMotion}
-        />
-      </Box>
-
       <Container maxWidth="lg" sx={{ position: 'relative' }}>
         {/* Section header */}
         <MotionBox
-          variants={headerVariants}
+          variants={fadeUp}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: '-80px' }}
@@ -342,15 +436,15 @@ export default function SpaceSkills() {
             alignItems="center"
             justifyContent="center"
             spacing={2}
-            sx={{ mb: 8 }}
+            sx={{ mb: { xs: 5, md: 8 } }}
           >
             <Construction sx={{ fontSize: 40, color: cyanMain }} />
             <Typography
               variant="h2"
               sx={{
-                fontWeight: theme.custom.typography.weights.bold,
-                fontFamily: theme.custom.typography.fonts.primary,
-                letterSpacing: theme.custom.typography.spacing.extraLoose,
+                fontWeight: typography.weights.bold,
+                fontFamily: typography.fonts.primary,
+                letterSpacing: typography.spacing.extraLoose,
               }}
             >
               SYSTEMS
@@ -358,7 +452,7 @@ export default function SpaceSkills() {
             <Typography
               variant="h2"
               sx={{
-                fontWeight: theme.custom.typography.weights.bold,
+                fontWeight: typography.weights.bold,
                 color: 'text.secondary',
               }}
             >
@@ -367,258 +461,145 @@ export default function SpaceSkills() {
           </Stack>
         </MotionBox>
 
-        {/* Grid layout */}
+        {/* ============================================================ */}
+        {/* Main layout: Radar (55%) | Gauge Panel (45%)                 */}
+        {/* ============================================================ */}
         <Box
-          component={motion.div}
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-100px' }}
+          ref={gaugeRef}
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', md: 'row' },
+            gap: 4,
+            alignItems: 'stretch',
+          }}
         >
-          <Grid container spacing={3}>
-            {/* ---- CORE SYSTEMS (Frontend) ---- */}
-            <Grid size={{ xs: 12, md: 7 }} sx={{ display: 'flex' }}>
-              <Tilt
-                tiltMaxAngleX={3}
-                tiltMaxAngleY={3}
-                style={{ width: '100%', height: '100%' }}
-              >
-                <MotionPaper
-                  variants={panelVariants}
-                  elevation={0}
-                  sx={{
-                    ...glassPanel,
-                    '&:hover': {
-                      borderColor: cyanMain,
-                      boxShadow: `0 8px 32px ${primaryGlow(0.2)}`,
-                    },
-                  }}
-                >
-                  <Typography
-                    variant="h5"
-                    sx={{
-                      fontWeight: theme.custom.typography.weights.semiBold,
-                      mb: 3,
-                      letterSpacing: theme.custom.typography.spacing.relaxed,
-                    }}
-                  >
-                    <Code
-                      sx={{
-                        mr: 1,
-                        verticalAlign: 'middle',
-                        color: cyanMain,
-                      }}
-                    />
-                    CORE SYSTEMS
-                  </Typography>
-                  <Box
-                    component={motion.div}
-                    variants={containerVariants}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true }}
-                  >
-                    <Stack
-                      direction="row"
-                      spacing={1.5}
-                      flexWrap="wrap"
-                      useFlexGap
-                    >
-                      {skills.frontend.map((skill, index) => {
-                        const IconComponent = skillIcons[skill];
-                        return (
-                          <MotionChip
-                            key={index}
-                            icon={
-                              IconComponent ? (
-                                <IconComponent size={18} />
-                              ) : undefined
-                            }
-                            label={skill}
-                            variants={chipVariants}
-                            whileHover={
-                              prefersReducedMotion
-                                ? {}
-                                : {
-                                    scale: 1.05,
-                                    transition: { duration: 0.2 },
-                                  }
-                            }
-                            sx={chipPrimary}
-                          />
-                        );
-                      })}
-                    </Stack>
-                  </Box>
-                </MotionPaper>
-              </Tilt>
-            </Grid>
+          {/* RADAR DISPLAY */}
+          <MotionBox
+            variants={fadeUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-60px' }}
+            sx={{
+              flex: { md: '0 0 55%' },
+            }}
+          >
+            <Typography
+              sx={{
+                fontFamily: mono,
+                fontSize: '0.65rem',
+                fontWeight: typography.weights.bold,
+                letterSpacing: typography.spacing.superLoose,
+                color: 'primary.main',
+                opacity: 0.5,
+                mb: 2,
+                textAlign: 'center',
+              }}
+            >
+              // CORE SYSTEMS RADAR
+            </Typography>
+            <Box
+              sx={{
+                ...glassPanel,
+                p: { xs: 2, md: 3 },
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <RadarDisplay
+                skills={skills.frontend}
+                primaryColor={cyanMain}
+                secondaryColor={amberMain}
+                isDark={isDark}
+                glow={glow}
+                reducedMotion={prefersReducedMotion}
+                mono={mono}
+                typography={typography}
+              />
+            </Box>
+          </MotionBox>
 
-            {/* ---- PROGRAMMING LANGUAGES ---- */}
-            <Grid size={{ xs: 12, md: 5 }} sx={{ display: 'flex' }}>
-              <Tilt
-                tiltMaxAngleX={3}
-                tiltMaxAngleY={3}
-                style={{ width: '100%', height: '100%' }}
+          {/* GAUGE PANEL */}
+          <MotionBox
+            variants={fadeUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-60px' }}
+            sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3 }}
+          >
+            {/* PROGRAMMING LANGUAGES — Vertical gauge meters */}
+            <Box>
+              <Typography
+                sx={{
+                  fontFamily: mono,
+                  fontSize: '0.65rem',
+                  fontWeight: typography.weights.bold,
+                  letterSpacing: typography.spacing.superLoose,
+                  color: 'secondary.main',
+                  opacity: 0.7,
+                  mb: 2,
+                }}
               >
-                <MotionPaper
-                  variants={panelVariants}
-                  elevation={0}
-                  sx={{
-                    ...glassPanel,
-                    '&:hover': {
-                      borderColor: amberMain,
-                      boxShadow: `0 8px 32px ${secondaryGlow(0.2)}`,
-                    },
-                  }}
-                >
-                  <Typography
-                    variant="h5"
-                    sx={{
-                      fontWeight: theme.custom.typography.weights.semiBold,
-                      mb: 3,
-                      letterSpacing: theme.custom.typography.spacing.relaxed,
-                    }}
-                  >
-                    PROGRAMMING LANGUAGES
-                  </Typography>
-                  <Box
-                    component={motion.div}
-                    variants={containerVariants}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true }}
-                  >
-                    <Stack
-                      direction="row"
-                      spacing={1.5}
-                      flexWrap="wrap"
-                      useFlexGap
-                    >
-                      {skills.languages.map((lang, index) => {
-                        const IconComponent = skillIcons[lang];
-                        return (
-                          <MotionChip
-                            key={index}
-                            icon={
-                              IconComponent ? (
-                                <IconComponent size={18} />
-                              ) : undefined
-                            }
-                            label={lang}
-                            variants={chipVariants}
-                            whileHover={
-                              prefersReducedMotion
-                                ? {}
-                                : {
-                                    scale: 1.05,
-                                    transition: { duration: 0.2 },
-                                  }
-                            }
-                            sx={chipSecondary}
-                          />
-                        );
-                      })}
-                    </Stack>
-                  </Box>
-                </MotionPaper>
-              </Tilt>
-            </Grid>
+                // PROGRAMMING LANGUAGES
+              </Typography>
+              <Box sx={{ ...glassPanel, p: { xs: 3, md: 4 } }}>
+                <Stack direction="row" spacing={3} justifyContent="center">
+                  {skills.languages.map((lang, i) => {
+                    const IconComp = skillIcons[lang];
+                    return (
+                      <VerticalGauge
+                        key={lang}
+                        label={lang}
+                        icon={IconComp}
+                        color={amberMain}
+                        fillPercent={85 + i * 5}
+                        inView={gaugeInView}
+                        delay={i * 0.3}
+                        reducedMotion={prefersReducedMotion}
+                        mono={mono}
+                        typography={typography}
+                        glow={glow}
+                        isDark={isDark}
+                      />
+                    );
+                  })}
+                </Stack>
+              </Box>
+            </Box>
 
-            {/* ---- COMMUNICATION PROTOCOLS (Spoken Languages) ---- */}
-            <Grid size={{ xs: 12 }} sx={{ display: 'flex' }}>
-              <Tilt
-                tiltMaxAngleX={2}
-                tiltMaxAngleY={2}
-                style={{ width: '100%' }}
+            {/* COMMUNICATION PROTOCOLS — Signal strength bars */}
+            <Box>
+              <Typography
+                sx={{
+                  fontFamily: mono,
+                  fontSize: '0.65rem',
+                  fontWeight: typography.weights.bold,
+                  letterSpacing: typography.spacing.superLoose,
+                  color: 'primary.main',
+                  opacity: 0.7,
+                  mb: 2,
+                }}
               >
-                <MotionPaper
-                  variants={panelVariants}
-                  elevation={0}
-                  sx={{
-                    ...glassPanel,
-                    '&:hover': {
-                      borderColor: cyanMain,
-                      boxShadow: `0 8px 32px ${primaryGlow(0.15)}`,
-                    },
-                  }}
-                >
-                  <Stack
-                    direction="row"
-                    alignItems="center"
-                    spacing={1.5}
-                    sx={{ mb: 3 }}
-                  >
-                    <Language sx={{ fontSize: 32, color: cyanMain }} />
-                    <Typography
-                      variant="h5"
-                      sx={{
-                        fontWeight: theme.custom.typography.weights.semiBold,
-                        letterSpacing: theme.custom.typography.spacing.relaxed,
-                      }}
-                    >
-                      COMMUNICATION PROTOCOLS
-                    </Typography>
-                  </Stack>
-
-                  <Stack spacing={3} ref={languageBarsRef}>
-                    {languages.map((lang, index) => (
-                      <Box key={index}>
-                        <Stack
-                          direction="row"
-                          justifyContent="space-between"
-                          alignItems="center"
-                          sx={{ mb: 1 }}
-                        >
-                          <Typography
-                            variant="body1"
-                            sx={{
-                              fontWeight:
-                                theme.custom.typography.weights.medium,
-                              letterSpacing:
-                                theme.custom.typography.spacing.relaxed,
-                            }}
-                          >
-                            {lang.name}
-                          </Typography>
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{
-                              fontFamily:
-                                theme.custom.typography.fonts.mono,
-                              fontSize: '0.75rem',
-                              letterSpacing: '0.05em',
-                            }}
-                          >
-                            {lang.level} // {lang.proficiency}%
-                          </Typography>
-                        </Stack>
-                        <Box sx={barTrack}>
-                          <MotionBox
-                            initial={{ width: 0 }}
-                            animate={
-                              languageBarsInView
-                                ? { width: `${lang.proficiency}%` }
-                                : { width: 0 }
-                            }
-                            transition={{
-                              duration: prefersReducedMotion ? 0 : 1.2,
-                              delay: prefersReducedMotion
-                                ? 0
-                                : index * 0.2,
-                              ease: 'easeOut',
-                            }}
-                            sx={barFill}
-                          />
-                        </Box>
-                      </Box>
-                    ))}
-                  </Stack>
-                </MotionPaper>
-              </Tilt>
-            </Grid>
-          </Grid>
+                // COMMUNICATION PROTOCOLS
+              </Typography>
+              <Box sx={{ ...glassPanel, p: { xs: 3, md: 4 } }}>
+                {languages.map((lang, i) => (
+                  <SignalBars
+                    key={lang.name}
+                    {...lang}
+                    color={cyanMain}
+                    inView={gaugeInView}
+                    delay={0.5 + i * 0.2}
+                    reducedMotion={prefersReducedMotion}
+                    mono={mono}
+                    typography={typography}
+                    isDark={isDark}
+                    glow={glow}
+                  />
+                ))}
+              </Box>
+            </Box>
+          </MotionBox>
         </Box>
       </Container>
     </Box>

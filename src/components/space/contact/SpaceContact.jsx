@@ -3,10 +3,8 @@ import {
   Box,
   Container,
   Typography,
-  Paper,
   Stack,
   IconButton,
-  Grid,
 } from '@mui/material';
 import {
   Email,
@@ -20,231 +18,165 @@ import {
 import { useTheme } from '@mui/material/styles';
 import { keyframes } from '@mui/system';
 import { motion } from 'framer-motion';
-import Tilt from 'react-parallax-tilt';
 import { personalInfo, education, achievements } from '../../../data';
 import { usePrefersReducedMotion } from '../../../hooks/usePrefersReducedMotion';
 
-// ---------------------------------------------------------------------------
-// Keyframe Animations
-// ---------------------------------------------------------------------------
+const MotionBox = motion.create(Box);
 
-const pulseScan = keyframes`
-  0% {
-    left: -10%;
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-  }
-  90% {
-    opacity: 1;
-  }
-  100% {
-    left: 110%;
-    opacity: 0;
-  }
+/* ------------------------------------------------------------------ */
+/*  Keyframes                                                          */
+/* ------------------------------------------------------------------ */
+
+const signalExpand = keyframes`
+  0%   { transform: scale(0.3); opacity: 0.6; }
+  100% { transform: scale(2.5); opacity: 0; }
 `;
 
-const glowPulse = keyframes`
-  0%, 100% {
-    box-shadow: 0 0 8px rgba(0, 212, 255, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(0, 212, 255, 0.6), 0 0 40px rgba(0, 212, 255, 0.2);
-  }
+const scanPulse = keyframes`
+  0%   { left: -10%; opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { left: 110%; opacity: 0; }
 `;
 
-// -- Decorative element keyframes --
+/* ------------------------------------------------------------------ */
+/*  Signal Transmitter — Glowing orb with expanding rings              */
+/* ------------------------------------------------------------------ */
 
-const signalWaveExpand = keyframes`
-  0% {
-    transform: scale(0.3);
-    opacity: 0.7;
-  }
-  100% {
-    transform: scale(1.8);
-    opacity: 0;
-  }
+const orbPulse = keyframes`
+  0%, 100% { box-shadow: 0 0 20px currentColor, 0 0 40px currentColor, inset 0 0 15px currentColor; }
+  50%      { box-shadow: 0 0 30px currentColor, 0 0 60px currentColor, 0 0 90px currentColor, inset 0 0 20px currentColor; }
 `;
 
-const signalRingPulse = keyframes`
-  0% {
-    transform: scale(0.4);
-    opacity: 0.6;
-  }
-  100% {
-    transform: scale(2.2);
-    opacity: 0;
-  }
-`;
-
-const satelliteFloat = keyframes`
-  0%, 100% {
-    transform: translateY(0px) rotate(0deg);
-  }
-  25% {
-    transform: translateY(-6px) rotate(1.5deg);
-  }
-  50% {
-    transform: translateY(-3px) rotate(-1deg);
-  }
-  75% {
-    transform: translateY(-8px) rotate(0.5deg);
-  }
-`;
-
-const dataPacketPath1 = keyframes`
-  0% {
-    offset-distance: 0%;
-    opacity: 0;
-  }
-  10% {
-    opacity: 0.25;
-  }
-  90% {
-    opacity: 0.25;
-  }
-  100% {
-    offset-distance: 100%;
-    opacity: 0;
-  }
-`;
-
-const dataPacketPath2 = keyframes`
-  0% {
-    offset-distance: 0%;
-    opacity: 0;
-  }
-  15% {
-    opacity: 0.2;
-  }
-  85% {
-    opacity: 0.2;
-  }
-  100% {
-    offset-distance: 100%;
-    opacity: 0;
-  }
-`;
-
-const morseScroll = keyframes`
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
-`;
-
-// Glass style function - moved to component to access theme
-
-// ---------------------------------------------------------------------------
-// Animation variants
-// ---------------------------------------------------------------------------
-
-const sectionVariants = {
-  hidden: { opacity: 0, y: 60 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.7, ease: 'easeOut' },
-  },
-};
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 40, scale: 0.97 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { duration: 0.6, ease: 'easeOut' },
-  },
-};
-
-const staggerContainer = {
-  hidden: {},
-  visible: {
-    transition: {
-      staggerChildren: 0.15,
-      delayChildren: 0.2,
-    },
-  },
-};
-
-const childFade = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: 'easeOut' },
-  },
-};
-
-// ---------------------------------------------------------------------------
-// Subcomponents
-// ---------------------------------------------------------------------------
-
-function SignalPort({ icon, label, value }) {
-  const theme = useTheme();
-  const primaryColor = theme.palette.primary?.main || '#00d4ff';
-
+function SignalTransmitter({ color, secondaryColor, reducedMotion, isDark, glow }) {
   return (
     <Box
       sx={{
+        position: 'relative',
+        width: { xs: 180, md: 220 },
+        height: { xs: 180, md: 220 },
+        mx: 'auto',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      {/* Expanding signal wave rings */}
+      {!reducedMotion && [0, 1, 2].map((i) => (
+        <Box
+          key={i}
+          sx={{
+            position: 'absolute',
+            width: 70,
+            height: 70,
+            borderRadius: '50%',
+            border: `1.5px solid ${isDark ? secondaryColor : color}`,
+            opacity: 0,
+            animation: `${signalExpand} 3s ease-out ${i * 1}s infinite`,
+          }}
+        />
+      ))}
+
+      {/* Static concentric rings */}
+      {[0.9, 0.7, 0.5].map((scale, i) => (
+        <Box
+          key={i}
+          sx={{
+            position: 'absolute',
+            width: `${scale * 100}%`,
+            height: `${scale * 100}%`,
+            borderRadius: '50%',
+            border: `1px solid ${isDark ? glow.primaryGlow(0.08 + i * 0.03) : glow.primaryGlow(0.06)}`,
+          }}
+        />
+      ))}
+
+      {/* Central glowing orb */}
+      <Box
+        sx={{
+          width: 44,
+          height: 44,
+          borderRadius: '50%',
+          background: `radial-gradient(circle, ${color} 0%, ${glow.primaryGlow(0.6)} 50%, transparent 100%)`,
+          color: glow.primaryGlow(0.4),
+          animation: reducedMotion ? 'none' : `${orbPulse} 3s ease-in-out infinite`,
+          position: 'relative',
+          zIndex: 2,
+        }}
+      />
+
+      {/* Cross-lines through center */}
+      <Box sx={{ position: 'absolute', width: '80%', height: '1px', bgcolor: color, opacity: 0.06 }} />
+      <Box sx={{ position: 'absolute', width: '1px', height: '80%', bgcolor: color, opacity: 0.06 }} />
+    </Box>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Frequency Card                                                     */
+/* ------------------------------------------------------------------ */
+
+function FrequencyCard({ icon, label, value, color, glow, isDark, mono, typography, glassPanel }) {
+  return (
+    <Box
+      sx={{
+        ...glassPanel,
+        p: 2.5,
+        width: { xs: '100%', sm: 220 },
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: 1,
-        flex: 1,
-        py: 2,
-        px: { xs: 1, sm: 2 },
+        gap: 1.5,
+        transition: 'border-color 0.3s, box-shadow 0.3s',
+        '&:hover': {
+          borderColor: isDark ? glow.primaryGlow(0.2) : color,
+          boxShadow: isDark ? `0 0 20px ${glow.primaryGlow(0.1)}` : `0 4px 16px rgba(0,0,0,0.08)`,
+        },
       }}
     >
-      <Box
-        sx={{
-          width: 56,
-          height: 56,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          borderRadius: '50%',
-          background: (theme) => theme.custom.glow.primaryGlow(0.06),
-          border: (theme) => `1px solid ${theme.custom.glow.primaryGlow(0.12)}`,
-          boxShadow: (theme) => `0 0 16px ${theme.custom.glow.primaryGlow(0.15)}, inset 0 0 12px ${theme.custom.glow.primaryGlow(0.05)}`,
-          transition: 'box-shadow 0.3s ease, transform 0.3s ease',
-          '&:hover': {
-            boxShadow: (theme) => `0 0 24px ${theme.custom.glow.primaryGlow(0.35)}, inset 0 0 16px ${theme.custom.glow.primaryGlow(0.1)}`,
-            transform: 'scale(1.08)',
-          },
-        }}
-      >
-        {React.cloneElement(icon, {
-          sx: {
-            fontSize: 28,
-            color: primaryColor,
-            filter: `drop-shadow(0 0 6px ${primaryColor})`,
-          },
-        })}
+      {/* Small dial SVG */}
+      <Box sx={{ position: 'relative', width: 44, height: 44 }}>
+        <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+          <circle cx="22" cy="22" r="20" stroke={color} strokeWidth="1" opacity="0.2" />
+          <circle cx="22" cy="22" r="14" stroke={color} strokeWidth="0.5" opacity="0.1" />
+          {/* Dial needle */}
+          <line x1="22" y1="22" x2="22" y2="8" stroke={color} strokeWidth="1.5" opacity="0.5" />
+          <circle cx="22" cy="22" r="3" fill={color} opacity="0.4" />
+        </svg>
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color,
+          }}
+        >
+          {React.cloneElement(icon, { sx: { fontSize: 16, color: 'inherit' } })}
+        </Box>
       </Box>
+
       <Typography
-        variant="caption"
         sx={{
-          fontFamily: 'monospace',
-          letterSpacing: '0.18em',
+          fontFamily: mono,
+          fontSize: '0.6rem',
+          fontWeight: typography.weights.bold,
           color: 'text.secondary',
-          fontWeight: 700,
-          fontSize: '0.65rem',
+          letterSpacing: '0.15em',
           textTransform: 'uppercase',
         }}
       >
         {label}
       </Typography>
+
       <Typography
-        variant="body2"
         sx={{
+          fontSize: '0.82rem',
           color: 'text.primary',
           textAlign: 'center',
-          fontSize: { xs: '0.78rem', sm: '0.85rem' },
           wordBreak: 'break-word',
           maxWidth: 200,
         }}
@@ -255,18 +187,13 @@ function SignalPort({ icon, label, value }) {
   );
 }
 
-function SignalLine({ reducedMotion }) {
+/* ------------------------------------------------------------------ */
+/*  Signal Line Divider                                                */
+/* ------------------------------------------------------------------ */
+
+function SignalLineDivider({ color, reducedMotion }) {
   return (
-    <Box
-      sx={{
-        position: 'relative',
-        width: '100%',
-        height: 2,
-        my: 5,
-        overflow: 'hidden',
-      }}
-    >
-      {/* Base line */}
+    <Box sx={{ position: 'relative', width: '100%', height: 2, my: 5, overflow: 'hidden' }}>
       <Box
         sx={{
           position: 'absolute',
@@ -274,12 +201,11 @@ function SignalLine({ reducedMotion }) {
           left: '5%',
           width: '90%',
           height: '100%',
-          background: (theme) =>
-            `linear-gradient(90deg, transparent, ${theme.custom.glow.primaryGlow(0.15)} 20%, ${theme.custom.glow.primaryGlow(0.15)} 80%, transparent)`,
+          background: `linear-gradient(90deg, transparent, ${color} 20%, ${color} 80%, transparent)`,
+          opacity: 0.15,
           borderRadius: 1,
         }}
       />
-      {/* Scanning pulse */}
       {!reducedMotion && (
         <Box
           sx={{
@@ -288,10 +214,9 @@ function SignalLine({ reducedMotion }) {
             width: 60,
             height: 6,
             borderRadius: 3,
-            background: (theme) =>
-              `radial-gradient(ellipse at center, ${theme.custom.glow.primaryGlow(0.9)} 0%, ${theme.custom.glow.primaryGlow(0)} 70%)`,
-            boxShadow: (theme) => `0 0 12px 4px ${theme.custom.glow.primaryGlow(0.4)}`,
-            animation: `${pulseScan} 3.5s linear infinite`,
+            background: `radial-gradient(ellipse at center, ${color} 0%, transparent 70%)`,
+            boxShadow: `0 0 12px 4px ${color}66`,
+            animation: `${scanPulse} 3.5s linear infinite`,
           }}
         />
       )}
@@ -299,23 +224,28 @@ function SignalLine({ reducedMotion }) {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Main Component
-// ---------------------------------------------------------------------------
+/* ------------------------------------------------------------------ */
+/*  SpaceContact                                                       */
+/* ------------------------------------------------------------------ */
 
 export default function SpaceContact() {
   const theme = useTheme();
   const reducedMotion = usePrefersReducedMotion();
-  const primaryColor = theme.palette.primary?.main || '#00d4ff';
+  const primaryColor = theme.palette.primary.main;
+  const secondaryColor = theme.palette.secondary.main;
   const isDark = theme.palette.mode === 'dark';
   const glass = theme.palette.glass;
+  const glow = theme.custom.glow;
+  const { typography, glassEffect, animations } = theme.custom;
+  const mono = typography.fonts.mono;
 
-  const GLASS_SX = {
+  const glassPanel = {
     background: glass.background,
     border: `1px solid ${glass.border}`,
-    backdropFilter: theme.custom.glassEffect.blur,
-    WebkitBackdropFilter: theme.custom.glassEffect.blur,
+    backdropFilter: glassEffect.blur,
+    WebkitBackdropFilter: glassEffect.blur,
     borderRadius: '6px',
+    boxShadow: glass.shadow,
   };
 
   const motionProps = useMemo(
@@ -330,40 +260,36 @@ export default function SpaceContact() {
     [reducedMotion],
   );
 
+  const fadeUp = {
+    hidden: { opacity: 0, y: reducedMotion ? 0 : 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: reducedMotion ? 0 : 0.6, ease: 'easeOut' },
+    },
+  };
+
+  const stagger = {
+    hidden: {},
+    visible: {
+      transition: {
+        staggerChildren: reducedMotion ? 0 : 0.12,
+        delayChildren: reducedMotion ? 0 : 0.2,
+      },
+    },
+  };
+
   const channels = [
-    {
-      icon: <Email />,
-      label: 'EMAIL',
-      value: personalInfo.email,
-    },
-    {
-      icon: <Phone />,
-      label: 'PHONE',
-      value: personalInfo.phone,
-    },
-    {
-      icon: <LocationOn />,
-      label: 'LOCATION',
-      value: personalInfo.location,
-    },
+    { icon: <Email />, label: 'EMAIL', value: personalInfo.email },
+    { icon: <Phone />, label: 'PHONE', value: personalInfo.phone },
+    { icon: <LocationOn />, label: 'LOCATION', value: personalInfo.location },
+    { icon: <LinkedIn />, label: 'LINKEDIN', value: 'LinkedIn Profile' },
   ];
 
   const socialActions = [
-    {
-      icon: <Email />,
-      label: 'Send Email',
-      href: `mailto:${personalInfo.email}`,
-    },
-    {
-      icon: <LinkedIn />,
-      label: 'LinkedIn',
-      href: personalInfo.linkedin,
-    },
-    {
-      icon: <Phone />,
-      label: 'Call',
-      href: `tel:${personalInfo.phone}`,
-    },
+    { icon: <Email />, label: 'Send Email', href: `mailto:${personalInfo.email}` },
+    { icon: <LinkedIn />, label: 'LinkedIn', href: personalInfo.linkedin },
+    { icon: <Phone />, label: 'Call', href: `tel:${personalInfo.phone}` },
   ];
 
   return (
@@ -378,22 +304,11 @@ export default function SpaceContact() {
       }}
     >
       <Container maxWidth="lg">
-        {/* ---------------------------------------------------------------- */}
-        {/* Section Header                                                   */}
-        {/* ---------------------------------------------------------------- */}
-        <Box
-          component={motion.div}
-          variants={sectionVariants}
-          {...motionProps}
-          sx={{ textAlign: 'center', mb: 6 }}
-        >
-          <Stack
-            direction="row"
-            alignItems="center"
-            justifyContent="center"
-            spacing={1.5}
-            sx={{ mb: 1 }}
-          >
+        {/* ============================================================ */}
+        {/* Section Header                                               */}
+        {/* ============================================================ */}
+        <MotionBox variants={fadeUp} {...motionProps} sx={{ textAlign: 'center', mb: 4 }}>
+          <Stack direction="row" alignItems="center" justifyContent="center" spacing={1.5} sx={{ mb: 1 }}>
             <ContactMail
               sx={{
                 fontSize: 32,
@@ -404,371 +319,231 @@ export default function SpaceContact() {
             <Typography
               variant="h3"
               sx={{
-                fontFamily: 'monospace',
+                fontFamily: mono,
                 fontWeight: 800,
                 letterSpacing: '0.25em',
                 textTransform: 'uppercase',
-                background: `linear-gradient(135deg, ${primaryColor}, #a78bfa)`,
+                background: theme.palette.gradient.primary,
                 backgroundClip: 'text',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 fontSize: { xs: '1.8rem', md: '2.4rem' },
               }}
             >
-              COMMS
+              COMMS ARRAY
             </Typography>
           </Stack>
           <Typography
-            variant="subtitle1"
             sx={{
-              fontFamily: 'monospace',
+              fontFamily: mono,
               color: 'text.secondary',
               letterSpacing: '0.12em',
               fontSize: '0.9rem',
               opacity: 0.7,
             }}
           >
-            Transmission Hub
+            Deep Space Communication Hub
           </Typography>
-        </Box>
+        </MotionBox>
 
-        {/* ---------------------------------------------------------------- */}
-        {/* Main Contact Card                                                */}
-        {/* ---------------------------------------------------------------- */}
-        <Box
-          component={motion.div}
-          variants={cardVariants}
-          {...motionProps}
-          sx={{ mb: 4 }}
-        >
-          <Tilt
-            tiltMaxAngleX={3}
-            tiltMaxAngleY={3}
-            glareEnable={false}
-            tiltEnable={!reducedMotion}
-            style={{ width: '100%' }}
-          >
-            <Paper
-              elevation={0}
+        {/* ============================================================ */}
+        {/* DISH ILLUSTRATION — Centered                                 */}
+        {/* ============================================================ */}
+        <MotionBox variants={fadeUp} {...motionProps} sx={{ mb: 4 }}>
+          <SignalTransmitter
+            color={primaryColor}
+            secondaryColor={secondaryColor}
+            reducedMotion={reducedMotion}
+            isDark={isDark}
+            glow={glow}
+          />
+        </MotionBox>
+
+        {/* Social action buttons below dish */}
+        <Stack direction="row" spacing={2} justifyContent="center" sx={{ mb: 5 }}>
+          {socialActions.map((action) => (
+            <IconButton
+              key={action.label}
+              component="a"
+              href={action.href}
+              target={action.label === 'LinkedIn' ? '_blank' : undefined}
+              rel={action.label === 'LinkedIn' ? 'noopener noreferrer' : undefined}
+              aria-label={action.label}
               sx={{
-                ...GLASS_SX,
-                p: { xs: 3, md: 5 },
-                transition: 'box-shadow 0.4s ease, border-color 0.4s ease',
+                width: 48,
+                height: 48,
+                backgroundColor: 'primary.main',
+                color: isDark ? theme.palette.background.default : '#ffffff',
+                borderRadius: '12px',
+                transition: 'box-shadow 0.3s, transform 0.3s, background-color 0.3s',
                 '&:hover': {
-                  boxShadow: (theme) => isDark
-                    ? `0 0 30px ${theme.custom.glow.primaryGlow(0.12)}, inset 0 0 30px ${theme.custom.glow.primaryGlow(0.03)}`
-                    : `0 4px 30px ${theme.palette.action.hover}`,
-                  borderColor: (theme) => isDark ? theme.custom.glow.primaryGlow(0.18) : theme.palette.action.selected,
+                  backgroundColor: 'primary.main',
+                  boxShadow: `0 0 20px ${primaryColor}, 0 0 40px ${glow.primaryGlow(0.25)}`,
+                  transform: 'translateY(-2px) scale(1.06)',
                 },
               }}
             >
-              {/* Title */}
+              {action.icon}
+            </IconButton>
+          ))}
+        </Stack>
+
+        {/* ============================================================ */}
+        {/* FREQUENCY CHANNELS — Horizontal cards                        */}
+        {/* ============================================================ */}
+        <MotionBox variants={stagger} {...motionProps}>
+          <Stack
+            direction="row"
+            flexWrap="wrap"
+            justifyContent="center"
+            gap={2.5}
+            sx={{ mb: 2 }}
+          >
+            {channels.map((ch) => (
+              <MotionBox key={ch.label} variants={fadeUp}>
+                <FrequencyCard
+                  icon={ch.icon}
+                  label={ch.label}
+                  value={ch.value}
+                  color={primaryColor}
+                  glow={glow}
+                  isDark={isDark}
+                  mono={mono}
+                  typography={typography}
+                  glassPanel={glassPanel}
+                />
+              </MotionBox>
+            ))}
+          </Stack>
+        </MotionBox>
+
+        {/* Signal line divider */}
+        <SignalLineDivider color={primaryColor} reducedMotion={reducedMotion} />
+
+        {/* ============================================================ */}
+        {/* TRANSMISSION LOG — Single column terminal style              */}
+        {/* ============================================================ */}
+        <MotionBox variants={fadeUp} {...motionProps}>
+          <Box sx={{ ...glassPanel, p: { xs: 3, md: 4 } }}>
+            <Typography
+              sx={{
+                fontFamily: mono,
+                fontWeight: typography.weights.bold,
+                fontSize: '0.75rem',
+                letterSpacing: typography.spacing.superLoose,
+                textTransform: 'uppercase',
+                color: 'primary.main',
+                mb: 3,
+                opacity: 0.7,
+              }}
+            >
+              {'>'} RECEIVED TRANSMISSIONS
+            </Typography>
+
+            {/* Education entry — full-width single row */}
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={{ xs: 1, sm: 3 }}
+              alignItems={{ sm: 'center' }}
+              sx={{
+                py: 2,
+                px: 2,
+                borderRadius: '4px',
+                bgcolor: isDark ? glow.primaryGlow(0.03) : 'rgba(0,0,0,0.02)',
+                border: `1px solid ${isDark ? glow.primaryGlow(0.06) : theme.palette.divider}`,
+                mb: 2,
+              }}
+            >
+              <School sx={{ fontSize: 22, color: primaryColor, opacity: 0.7, flexShrink: 0 }} />
               <Typography
-                variant="h5"
                 sx={{
-                  fontFamily: 'monospace',
-                  fontWeight: 800,
-                  letterSpacing: '0.18em',
-                  textAlign: 'center',
-                  mb: 4,
+                  fontWeight: typography.weights.bold,
+                  fontSize: '0.9rem',
                   color: 'text.primary',
-                  textTransform: 'uppercase',
-                  fontSize: { xs: '1rem', md: '1.3rem' },
+                  whiteSpace: { sm: 'nowrap' },
                 }}
               >
-                INITIATE TRANSMISSION
+                {education.degree}
               </Typography>
-
-              {/* Communication Channels */}
-              <Box
-                component={motion.div}
-                variants={staggerContainer}
-                {...motionProps}
+              <Typography
+                sx={{
+                  fontFamily: mono,
+                  fontSize: '0.8rem',
+                  color: primaryColor,
+                  whiteSpace: { sm: 'nowrap' },
+                }}
               >
-                <Stack
-                  direction={{ xs: 'column', sm: 'row' }}
-                  divider={
-                    <Box
-                      sx={{
-                        width: { xs: '60%', sm: '1px' },
-                        height: { xs: '1px', sm: 80 },
-                        alignSelf: 'center',
-                        background: (theme) =>
-                          `linear-gradient(to bottom, transparent, ${theme.custom.glow.primaryGlow(0.15)}, transparent)`,
-                        mx: { sm: 1 },
-                        my: { xs: 1, sm: 0 },
-                      }}
-                    />
-                  }
-                  alignItems="center"
-                  justifyContent="center"
-                >
-                  {channels.map((channel) => (
-                    <Box
-                      key={channel.label}
-                      component={motion.div}
-                      variants={childFade}
-                    >
-                      <SignalPort
-                        icon={channel.icon}
-                        label={channel.label}
-                        value={channel.value}
-                      />
-                    </Box>
-                  ))}
-                </Stack>
-              </Box>
+                {education.institution}{education.location ? `, ${education.location}` : ''}
+              </Typography>
+              <Typography
+                sx={{
+                  fontFamily: mono,
+                  fontSize: '0.7rem',
+                  color: 'text.secondary',
+                  letterSpacing: '0.08em',
+                  whiteSpace: { sm: 'nowrap' },
+                  ml: { sm: 'auto' },
+                }}
+              >
+                {education.period}
+              </Typography>
+            </Stack>
 
-              {/* Social Action Buttons */}
+            {/* Achievement entries — full-width single row each */}
+            {achievements.map((item, idx) => (
               <Stack
-                direction="row"
-                spacing={2}
-                justifyContent="center"
-                sx={{ mt: 4 }}
+                key={idx}
+                direction={{ xs: 'column', sm: 'row' }}
+                spacing={{ xs: 1, sm: 3 }}
+                alignItems={{ sm: 'center' }}
+                sx={{
+                  py: 2,
+                  px: 2,
+                  borderRadius: '4px',
+                  bgcolor: isDark ? glow.primaryGlow(0.03) : 'rgba(0,0,0,0.02)',
+                  border: `1px solid ${isDark ? glow.primaryGlow(0.06) : theme.palette.divider}`,
+                  mb: idx < achievements.length - 1 ? 2 : 0,
+                }}
               >
-                {socialActions.map((action) => (
-                  <IconButton
-                    key={action.label}
-                    component="a"
-                    href={action.href}
-                    target={action.label === 'LinkedIn' ? '_blank' : undefined}
-                    rel={
-                      action.label === 'LinkedIn'
-                        ? 'noopener noreferrer'
-                        : undefined
-                    }
-                    aria-label={action.label}
-                    sx={{
-                      width: 48,
-                      height: 48,
-                      backgroundColor: 'primary.main',
-                      color: (theme) => theme.palette.mode === 'dark' ? theme.palette.background.default : '#ffffff',
-                      borderRadius: '12px',
-                      transition:
-                        'box-shadow 0.3s ease, transform 0.3s ease, background-color 0.3s ease',
-                      '&:hover': {
-                        backgroundColor: 'primary.main',
-                        boxShadow: (theme) => `0 0 20px ${theme.palette.primary.main}, 0 0 40px ${theme.custom.glow.primaryGlow(0.25)}`,
-                        transform: 'translateY(-2px) scale(1.06)',
-                      },
-                    }}
-                  >
-                    {action.icon}
-                  </IconButton>
-                ))}
+                <EmojiEvents sx={{ fontSize: 22, color: secondaryColor, opacity: 0.7, flexShrink: 0 }} />
+                <Typography
+                  sx={{
+                    fontWeight: typography.weights.bold,
+                    fontSize: '0.9rem',
+                    color: 'text.primary',
+                    whiteSpace: { sm: 'nowrap' },
+                  }}
+                >
+                  {item.title}
+                </Typography>
+                <Typography
+                  sx={{
+                    fontSize: '0.82rem',
+                    color: 'text.secondary',
+                    lineHeight: 1.6,
+                  }}
+                >
+                  {item.description}
+                </Typography>
               </Stack>
-            </Paper>
-          </Tilt>
-        </Box>
+            ))}
+          </Box>
+        </MotionBox>
 
-        {/* ---------------------------------------------------------------- */}
-        {/* Signal Line Decoration                                           */}
-        {/* ---------------------------------------------------------------- */}
-        <SignalLine reducedMotion={reducedMotion} />
-
-        {/* ---------------------------------------------------------------- */}
-        {/* Education & Achievements Grid                                    */}
-        {/* ---------------------------------------------------------------- */}
-        <Box
-          component={motion.div}
-          variants={staggerContainer}
-          {...motionProps}
-        >
-          <Grid container spacing={3}>
-            {/* Education Card */}
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Box component={motion.div} variants={cardVariants}>
-                <Tilt
-                  tiltMaxAngleX={4}
-                  tiltMaxAngleY={4}
-                  glareEnable={false}
-                  tiltEnable={!reducedMotion}
-                  style={{ height: '100%' }}
-                >
-                  <Paper
-                    elevation={0}
-                    sx={{
-                      ...GLASS_SX,
-                      p: { xs: 3, md: 4 },
-                      height: '100%',
-                      transition:
-                        'box-shadow 0.4s ease, border-color 0.4s ease',
-                      '&:hover': {
-                        boxShadow: (theme) => isDark
-                          ? `0 0 24px ${theme.custom.glow.primaryGlow(0.1)}, inset 0 0 20px ${theme.custom.glow.primaryGlow(0.03)}`
-                          : `0 4px 20px ${theme.palette.action.hover}`,
-                        borderColor: (theme) => isDark ? theme.custom.glow.primaryGlow(0.16) : theme.palette.action.selected,
-                      },
-                    }}
-                  >
-                    <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 3 }}>
-                      <School
-                        sx={{
-                          fontSize: 26,
-                          color: primaryColor,
-                          filter: `drop-shadow(0 0 6px ${primaryColor})`,
-                        }}
-                      />
-                      <Typography
-                        variant="h6"
-                        sx={{
-                          fontFamily: 'monospace',
-                          fontWeight: 700,
-                          letterSpacing: '0.14em',
-                          textTransform: 'uppercase',
-                          fontSize: '0.95rem',
-                          color: 'text.primary',
-                        }}
-                      >
-                        Training Protocol
-                      </Typography>
-                    </Stack>
-
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        fontWeight: 700,
-                        mb: 0.5,
-                        color: 'text.primary',
-                        fontSize: '1.1rem',
-                      }}
-                    >
-                      {education.degree}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: primaryColor,
-                        fontFamily: 'monospace',
-                        mb: 0.5,
-                        fontSize: '0.85rem',
-                      }}
-                    >
-                      {education.institution}
-                      {education.location ? `, ${education.location}` : ''}
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'text.secondary',
-                        fontFamily: 'monospace',
-                        letterSpacing: '0.08em',
-                        fontSize: '0.75rem',
-                      }}
-                    >
-                      {education.period}
-                    </Typography>
-                  </Paper>
-                </Tilt>
-              </Box>
-            </Grid>
-
-            {/* Achievements Card */}
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Box component={motion.div} variants={cardVariants}>
-                <Tilt
-                  tiltMaxAngleX={4}
-                  tiltMaxAngleY={4}
-                  glareEnable={false}
-                  tiltEnable={!reducedMotion}
-                  style={{ height: '100%' }}
-                >
-                  <Paper
-                    elevation={0}
-                    sx={{
-                      ...GLASS_SX,
-                      p: { xs: 3, md: 4 },
-                      height: '100%',
-                      transition:
-                        'box-shadow 0.4s ease, border-color 0.4s ease',
-                      '&:hover': {
-                        boxShadow: (theme) => isDark
-                          ? `0 0 24px ${theme.custom.glow.primaryGlow(0.1)}, inset 0 0 20px ${theme.custom.glow.primaryGlow(0.03)}`
-                          : `0 4px 20px ${theme.palette.action.hover}`,
-                        borderColor: (theme) => isDark ? theme.custom.glow.primaryGlow(0.16) : theme.palette.action.selected,
-                      },
-                    }}
-                  >
-                    <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 3 }}>
-                      <EmojiEvents
-                        sx={{
-                          fontSize: 26,
-                          color: primaryColor,
-                          filter: `drop-shadow(0 0 6px ${primaryColor})`,
-                        }}
-                      />
-                      <Typography
-                        variant="h6"
-                        sx={{
-                          fontFamily: 'monospace',
-                          fontWeight: 700,
-                          letterSpacing: '0.14em',
-                          textTransform: 'uppercase',
-                          fontSize: '0.95rem',
-                          color: 'text.primary',
-                        }}
-                      >
-                        Commendations
-                      </Typography>
-                    </Stack>
-
-                    <Stack spacing={2.5}>
-                      {achievements.map((item, idx) => (
-                        <Box key={idx}>
-                          <Typography
-                            variant="body1"
-                            sx={{
-                              fontWeight: 700,
-                              mb: 0.5,
-                              color: 'text.primary',
-                              fontSize: '0.95rem',
-                            }}
-                          >
-                            {item.title}
-                          </Typography>
-                          <Typography
-                            variant="body2"
-                            sx={{
-                              color: 'text.secondary',
-                              fontSize: '0.82rem',
-                              lineHeight: 1.6,
-                            }}
-                          >
-                            {item.description}
-                          </Typography>
-                        </Box>
-                      ))}
-                    </Stack>
-                  </Paper>
-                </Tilt>
-              </Box>
-            </Grid>
-          </Grid>
-        </Box>
-
-        {/* ---------------------------------------------------------------- */}
-        {/* Footer                                                           */}
-        {/* ---------------------------------------------------------------- */}
-        <Box
-          component={motion.div}
-          variants={childFade}
-          {...motionProps}
-          sx={{ textAlign: 'center', mt: 8 }}
-        >
+        {/* Footer */}
+        <MotionBox variants={fadeUp} {...motionProps} sx={{ textAlign: 'center', mt: 8 }}>
           <Typography
-            variant="caption"
             sx={{
               color: 'text.secondary',
-              fontFamily: 'monospace',
+              fontFamily: mono,
               letterSpacing: '0.1em',
               fontSize: '0.72rem',
               opacity: 0.5,
             }}
           >
-            &copy; {new Date().getFullYear()} {personalInfo.name}. All
-            transmissions secured.
+            &copy; {new Date().getFullYear()} {personalInfo.name}. All transmissions secured.
           </Typography>
-        </Box>
+        </MotionBox>
       </Container>
     </Box>
   );

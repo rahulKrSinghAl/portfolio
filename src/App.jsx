@@ -3,7 +3,6 @@ import { Box } from '@mui/material';
 import Lenis from 'lenis';
 import { AestheticThemeProvider, useAestheticTheme } from './context/AestheticThemeContext';
 import { ThemedBackground } from './components/theme-decorative-bridge';
-import ThemeGallery from './components/theme-gallery';
 
 // Japanese theme components
 import {
@@ -66,7 +65,6 @@ function JapaneseLayout({ darkMode, toggleMode }) {
         <Experience />
         <Skills />
         <Projects />
-        <ThemeGallery />
         <Contact />
       </Box>
     </>
@@ -86,7 +84,6 @@ function SpaceLayout({ darkMode, toggleMode }) {
         <SpaceExperience />
         <SpaceSkills />
         <SpaceProjects />
-        <ThemeGallery />
         <SpaceContact />
       </Box>
     </>
@@ -106,7 +103,6 @@ function VintageLayout({ darkMode, toggleMode }) {
         <VintageExperience />
         <VintageSkills />
         <VintageProjects />
-        <ThemeGallery />
         <VintageContact />
       </Box>
     </>
@@ -126,7 +122,6 @@ function CyberpunkLayout({ darkMode, toggleMode }) {
         <CyberpunkExperience />
         <CyberpunkSkills />
         <CyberpunkProjects />
-        <ThemeGallery />
         <CyberpunkContact />
       </Box>
     </>
