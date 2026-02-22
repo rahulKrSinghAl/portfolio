@@ -29,6 +29,18 @@ import {
   SpaceSectionIndicator,
 } from './components/space';
 
+// Vintage theme components
+import {
+  VintageHeader,
+  VintageHero,
+  VintageAbout,
+  VintageExperience,
+  VintageSkills,
+  VintageProjects,
+  VintageContact,
+  VintageSectionIndicator,
+} from './components/vintage';
+
 function JapaneseLayout({ darkMode, toggleMode }) {
   return (
     <>
@@ -64,6 +76,26 @@ function SpaceLayout({ darkMode, toggleMode }) {
         <SpaceProjects />
         <ThemeGallery />
         <SpaceContact />
+      </Box>
+    </>
+  );
+}
+
+function VintageLayout({ darkMode, toggleMode }) {
+  return (
+    <>
+      <VintageSectionIndicator />
+      <Box sx={{ minHeight: '100vh', position: 'relative', overflowX: 'hidden' }}>
+        <VintageHeader darkMode={darkMode} toggleTheme={toggleMode} />
+        <Box id="hero">
+          <VintageHero />
+        </Box>
+        <VintageAbout />
+        <VintageExperience />
+        <VintageSkills />
+        <VintageProjects />
+        <ThemeGallery />
+        <VintageContact />
       </Box>
     </>
   );
@@ -113,6 +145,8 @@ function AppContent() {
       {/* Render layout based on active theme */}
       {themeId === 'space' ? (
         <SpaceLayout darkMode={darkMode} toggleMode={toggleMode} />
+      ) : themeId === 'vintage' ? (
+        <VintageLayout darkMode={darkMode} toggleMode={toggleMode} />
       ) : (
         <JapaneseLayout darkMode={darkMode} toggleMode={toggleMode} />
       )}
