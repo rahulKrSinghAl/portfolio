@@ -32,10 +32,6 @@ const energyLine = keyframes`
   100% { left: 100%; }
 `;
 
-const orbitalSpin = keyframes`
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-`;
 
 /* ------------------------------------------------------------------ */
 /*  Component                                                          */
@@ -175,67 +171,6 @@ export default function SpaceHero() {
       />
 
       {/* ============================================================ */}
-      {/*  Orbital decorative rings                                     */}
-      {/* ============================================================ */}
-      <Box
-        sx={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          width: { xs: '500px', md: '750px' },
-          height: { xs: '500px', md: '750px' },
-          transform: 'translate(-50%, -50%)',
-          pointerEvents: 'none',
-          zIndex: 0,
-        }}
-      >
-        {/* Outer ring */}
-        <Box
-          sx={{
-            position: 'absolute',
-            inset: 0,
-            border: `1px solid ${glow.primaryGlow(0.06)}`,
-            borderRadius: '50%',
-            animation: prefersReducedMotion ? 'none' : `${orbitalSpin} 90s linear infinite`,
-            '&::after': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: '50%',
-              width: '6px',
-              height: '6px',
-              borderRadius: '50%',
-              background: glow.primaryGlow(0.3),
-              transform: 'translate(-50%, -50%)',
-              boxShadow: `0 0 12px ${glow.primaryGlow(0.4)}`,
-            },
-          }}
-        />
-        {/* Inner ring */}
-        <Box
-          sx={{
-            position: 'absolute',
-            inset: '15%',
-            border: `1px solid ${glow.secondaryGlow(0.05)}`,
-            borderRadius: '50%',
-            animation: prefersReducedMotion ? 'none' : `${orbitalSpin} 60s linear infinite reverse`,
-            '&::after': {
-              content: '""',
-              position: 'absolute',
-              bottom: 0,
-              left: '50%',
-              width: '4px',
-              height: '4px',
-              borderRadius: '50%',
-              background: glow.secondaryGlow(0.35),
-              transform: 'translate(-50%, 50%)',
-              boxShadow: `0 0 10px ${glow.secondaryGlow(0.4)}`,
-            },
-          }}
-        />
-      </Box>
-
-      {/* ============================================================ */}
       {/*  Parallax wrapper                                             */}
       {/* ============================================================ */}
       <MotionBox
@@ -261,7 +196,7 @@ export default function SpaceHero() {
                 justifyContent: 'center',
               }}
             >
-              <Logo size={{ xs: 120, sm: 160, md: 200 }} showGlow={true} />
+              <Logo size={{ xs: 80, sm: 110, md: 130 }} showGlow={true} />
             </MotionBox>
 
             {/* ---- Subtitle ---- */}

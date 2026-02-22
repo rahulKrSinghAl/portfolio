@@ -130,7 +130,7 @@ export default function ThemeGallery() {
 
         <Grid container spacing={muiTheme.custom.spacing.md}>
           {themeList.map((t) => (
-            <Grid item xs={12} sm={6} md={4} key={t.id} sx={{ display: 'flex' }}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={t.id} sx={{ display: 'flex' }}>
               <RevealOnScroll style={{ width: '100%' }}>
                 <ThemeCard
                   theme={t}

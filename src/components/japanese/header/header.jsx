@@ -1,7 +1,10 @@
-import { useState, useEffect } from 'react';
-import { AppBar, Toolbar, Box, IconButton, Slide, Container, Button, Stack, useMediaQuery, useTheme } from '@mui/material';
-import { Brightness4, Brightness7 } from '@mui/icons-material';
+import { useState, useEffect, useCallback } from 'react';
+import { AppBar, Toolbar, Box, IconButton, Slide, Container, Button, Stack, useMediaQuery, useTheme, Menu, MenuItem, ListItemText } from '@mui/material';
+import { Brightness4, Brightness7, Palette } from '@mui/icons-material';
 import { getHeaderStyles } from './header.styles';
+import { Logo } from '../../shared';
+import { useAestheticTheme } from '../../../context/AestheticThemeContext';
+import { themeList } from '../../../themes';
 
 function HideOnScroll({ children }) {
   const [show, setShow] = useState(true);
@@ -37,6 +40,21 @@ export default function Header({ darkMode, toggleTheme }) {
   const theme = useTheme();
   const styles = getHeaderStyles(theme);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { themeId, setThemeId } = useAestheticTheme();
+  const [themeMenuAnchor, setThemeMenuAnchor] = useState(null);
+
+  const handleThemeMenuOpen = useCallback((event) => {
+    setThemeMenuAnchor(event.currentTarget);
+  }, []);
+
+  const handleThemeMenuClose = useCallback(() => {
+    setThemeMenuAnchor(null);
+  }, []);
+
+  const handleThemeSelect = useCallback((id) => {
+    setThemeId(id);
+    setThemeMenuAnchor(null);
+  }, [setThemeId]);
 
   const sections = [
     { id: 'about', label: 'About', jp: '私について' },
@@ -71,15 +89,10 @@ export default function Header({ darkMode, toggleTheme }) {
               sx={styles.logoContainer}
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             >
-              <Box
-                component="img"
-                src="/logo-badge.svg"
-                alt="RKS Logo"
-                sx={styles.logoImage}
-              />
+              <Logo size={40} showGlow={false} />
               <Box sx={styles.logoTextContainer}>
                 <Box sx={styles.logoText}>
-                  RKS
+                  Rahul Singh
                 </Box>
                 <Box sx={styles.logoSubtext}>
                   開発者
@@ -107,14 +120,85 @@ export default function Header({ darkMode, toggleTheme }) {
               </Stack>
             )}
 
-            {/* Theme Toggle */}
-            <IconButton
-              onClick={toggleTheme}
-              color="inherit"
-              sx={styles.themeToggle}
-            >
-              {darkMode ? <Brightness7 fontSize="small" /> : <Brightness4 fontSize="small" />}
-            </IconButton>
+            {/* Theme Controls */}
+            <Stack direction="row" spacing={1}>
+              {/* Aesthetic theme selector */}
+              <IconButton
+                onClick={handleThemeMenuOpen}
+                color="inherit"
+                sx={styles.themeToggle}
+                aria-label="Select aesthetic theme"
+              >
+                <Palette fontSize="small" />
+              </IconButton>
+
+              {/* Theme dropdown menu */}
+              <Menu
+                anchorEl={themeMenuAnchor}
+                open={Boolean(themeMenuAnchor)}
+                onClose={handleThemeMenuClose}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'right',
+                }}
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                slotProps={{
+                  paper: {
+                    sx: {
+                      mt: 1,
+                      minWidth: 140,
+                      backdropFilter: 'blur(20px)',
+                      backgroundColor: (theme) =>
+                        theme.palette.mode === 'dark'
+                          ? 'rgba(18, 18, 18, 0.95)'
+                          : 'rgba(255, 255, 255, 0.95)',
+                      border: (theme) => `1px solid ${theme.palette.divider}`,
+                    },
+                  },
+                }}
+              >
+                {themeList.map((t) => (
+                  <MenuItem
+                    key={t.id}
+                    onClick={() => handleThemeSelect(t.id)}
+                    selected={t.id === themeId}
+                    sx={{
+                      py: 0.8,
+                      px: 2,
+                      fontSize: '0.875rem',
+                      fontFamily: t.typographyConfig.fonts.primary,
+                      fontWeight: t.id === themeId ? t.typographyConfig.weights.semiBold : t.typographyConfig.weights.regular,
+                      color: t.id === themeId ? 'text.primary' : 'text.disabled',
+                      '&:hover': {
+                        backgroundColor: 'action.hover',
+                        color: 'text.secondary',
+                      },
+                      '&.Mui-selected': {
+                        backgroundColor: 'action.selected',
+                        '&:hover': {
+                          backgroundColor: 'action.hover',
+                        },
+                      },
+                    }}
+                  >
+                    {t.name}
+                  </MenuItem>
+                ))}
+              </Menu>
+
+              {/* Dark/Light mode toggle */}
+              <IconButton
+                onClick={toggleTheme}
+                color="inherit"
+                sx={styles.themeToggle}
+                aria-label="Toggle light/dark theme"
+              >
+                {darkMode ? <Brightness7 fontSize="small" /> : <Brightness4 fontSize="small" />}
+              </IconButton>
+            </Stack>
           </Toolbar>
         </Container>
       </AppBar>

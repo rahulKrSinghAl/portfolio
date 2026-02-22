@@ -6,7 +6,7 @@ import Tilt from 'react-parallax-tilt';
 import { useTheme } from '@mui/material/styles';
 import { personalInfo } from '../../../data';
 import { usePrefersReducedMotion } from '../../../hooks/usePrefersReducedMotion';
-import { DecorativeElements } from '../../shared';
+import { DecorativeElements, Logo } from '../../shared';
 import { getHeroStyles } from './hero.styles';
 
 const MotionBox = motion.create(Box);
@@ -55,6 +55,14 @@ export default function Hero() {
             animate="visible"
             sx={styles.contentBox}
           >
+            {/* Logo */}
+            <MotionBox
+              variants={itemVariants}
+              sx={{ mb: 4, display: 'flex', justifyContent: 'center' }}
+            >
+              <Logo size={{ xs: 60, sm: 80, md: 100 }} showGlow={false} />
+            </MotionBox>
+
             {/* Japanese Character */}
             <MotionTypography variants={itemVariants} sx={styles.japaneseCharacter}>
               開発者
@@ -68,15 +76,7 @@ export default function Hero() {
             {/* Name */}
             <MotionBox variants={itemVariants}>
               <Typography variant="h1" sx={styles.nameText}>
-                {personalInfo.name.split(' ').map((word, i) => (
-                  <Box
-                    key={i}
-                    component="span"
-                    sx={{ display: 'block', mb: i === 0 ? 1 : 0 }}
-                  >
-                    {word}
-                  </Box>
-                ))}
+                {personalInfo.name}
               </Typography>
             </MotionBox>
 

@@ -43,7 +43,8 @@ export default function Logo({ size = 56, showGlow = false }) {
   return (
     <Box
       component="svg"
-      viewBox="0 0 1024 1024"
+      viewBox="420 0 580 560"
+      preserveAspectRatio="xMidYMid meet"
       sx={{
         width: size,
         height: size,
@@ -59,7 +60,7 @@ export default function Logo({ size = 56, showGlow = false }) {
         </linearGradient>
       </defs>
 
-      <g transform="translate(0,1024) scale(0.1,-0.1)">
+      <g transform="translate(0,1024) scale(0.14,-0.14)">
         {/* Main RS logo shapes with gradient */}
         <path
           fill={`url(#${gradientId})`}

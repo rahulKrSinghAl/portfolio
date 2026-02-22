@@ -120,7 +120,6 @@ const spaceTheme = {
         styleOverrides: {
           html: {
             overflowX: 'hidden',
-            backgroundColor: mode === 'dark' ? colors.black.pure : colors.white.soft,
             scrollbarColor: mode === 'dark'
               ? 'rgba(0, 212, 255, 0.2) #030712'
               : 'rgba(0, 0, 0, 0.2) #F1F5F9',

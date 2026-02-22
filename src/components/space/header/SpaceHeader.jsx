@@ -10,11 +10,17 @@ import {
   Slide,
   useMediaQuery,
   useTheme,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
 } from '@mui/material';
-import { Brightness4, Brightness7 } from '@mui/icons-material';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Brightness4, Brightness7, Palette } from '@mui/icons-material';
+
 import { Logo } from '../../shared';
 import { personalInfo } from '../../../data';
+import { useAestheticTheme } from '../../../context/AestheticThemeContext';
+import { themeList } from '../../../themes';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -63,53 +69,6 @@ function HideOnScroll({ children }) {
     <Slide appear={false} direction="down" in={visible}>
       {children}
     </Slide>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Active beacon indicator (framer-motion)
-// ---------------------------------------------------------------------------
-
-function ActiveBeacon({ color }) {
-  return (
-    <Box
-      component={motion.span}
-      initial={{ scale: 0, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      exit={{ scale: 0, opacity: 0 }}
-      transition={{ duration: 0.3, ease: 'easeOut' }}
-      sx={{
-        position: 'absolute',
-        top: 8,
-        right: 6,
-        width: 6,
-        height: 6,
-        borderRadius: '50%',
-        backgroundColor: color,
-        boxShadow: `0 0 6px 2px ${color}`,
-        pointerEvents: 'none',
-      }}
-    >
-      {/* Pulsing ring */}
-      <Box
-        component={motion.span}
-        animate={{
-          scale: [1, 2.2],
-          opacity: [0.6, 0],
-        }}
-        transition={{
-          duration: 1.4,
-          repeat: Infinity,
-          ease: 'easeOut',
-        }}
-        sx={{
-          position: 'absolute',
-          inset: 0,
-          borderRadius: '50%',
-          border: `1px solid ${color}`,
-        }}
-      />
-    </Box>
   );
 }
 
@@ -361,6 +320,8 @@ function useScrollProgress(maxScroll = 300) {
 export default function SpaceHeader({ darkMode, toggleTheme }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { themeId, setThemeId } = useAestheticTheme();
+  const [themeMenuAnchor, setThemeMenuAnchor] = useState(null);
 
   const scrollProgress = useScrollProgress();
   const sectionIds = useMemo(() => NAV_SECTIONS.map((s) => s.id), []);
@@ -368,10 +329,18 @@ export default function SpaceHeader({ darkMode, toggleTheme }) {
 
   const styles = useSpaceHeaderStyles(theme, scrollProgress);
 
-  // Split name for display (e.g., "Rahul Kumar Singh" -> "Rahul Kumar" + "Singh")
-  const nameParts = personalInfo.name.split(' ');
-  const lastName = nameParts[nameParts.length - 1];
-  const firstName = nameParts.slice(0, -1).join(' ');
+  const handleThemeMenuOpen = useCallback((event) => {
+    setThemeMenuAnchor(event.currentTarget);
+  }, []);
+
+  const handleThemeMenuClose = useCallback(() => {
+    setThemeMenuAnchor(null);
+  }, []);
+
+  const handleThemeSelect = useCallback((id) => {
+    setThemeId(id);
+    setThemeMenuAnchor(null);
+  }, [setThemeId]);
 
   const scrollToSection = useCallback((sectionId) => {
     const element = document.getElementById(sectionId);
@@ -393,11 +362,8 @@ export default function SpaceHeader({ darkMode, toggleTheme }) {
           <Toolbar disableGutters sx={styles.toolbar}>
             {/* ---- Logo ---- */}
             <Box sx={styles.logoContainer} onClick={scrollToTop}>
-              <Logo size={64} showGlow={false} />
-              <Box sx={styles.logoTextContainer}>
-                <Box sx={styles.logoText}>{firstName}</Box>
-                <Box sx={styles.logoSubtext}>{lastName}</Box>
-              </Box>
+              <Logo size={40} showGlow={false} />
+              <Box sx={styles.logoText}>{personalInfo.name}</Box>
             </Box>
 
             {/* ---- Navigation ---- */}
@@ -416,19 +382,7 @@ export default function SpaceHeader({ darkMode, toggleTheme }) {
                         ...(isActive ? styles.navButtonActive : {}),
                       }}
                     >
-                      <Box
-                        component="span"
-                        sx={{ position: 'relative', display: 'inline-flex' }}
-                      >
-                        {section.label}
-                        <AnimatePresence>
-                          {isActive && (
-                            <ActiveBeacon
-                              color={theme.palette.primary.main}
-                            />
-                          )}
-                        </AnimatePresence>
-                      </Box>
+                      {section.label}
                       <Box component="span" sx={styles.navCode}>
                         {section.code}
                       </Box>
@@ -438,18 +392,87 @@ export default function SpaceHeader({ darkMode, toggleTheme }) {
               </Stack>
             )}
 
-            {/* ---- Theme toggle ---- */}
-            <IconButton
-              onClick={toggleTheme}
-              aria-label="Toggle light/dark theme"
-              sx={styles.themeToggle}
-            >
-              {darkMode ? (
-                <Brightness7 fontSize="small" />
-              ) : (
-                <Brightness4 fontSize="small" />
-              )}
-            </IconButton>
+            {/* ---- Theme controls ---- */}
+            <Stack direction="row" spacing={1}>
+              {/* Aesthetic theme selector */}
+              <IconButton
+                onClick={handleThemeMenuOpen}
+                aria-label="Select aesthetic theme"
+                sx={styles.themeToggle}
+              >
+                <Palette fontSize="small" />
+              </IconButton>
+
+              {/* Theme dropdown menu */}
+              <Menu
+                anchorEl={themeMenuAnchor}
+                open={Boolean(themeMenuAnchor)}
+                onClose={handleThemeMenuClose}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'right',
+                }}
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                slotProps={{
+                  paper: {
+                    sx: {
+                      mt: 1,
+                      minWidth: 140,
+                      backdropFilter: 'blur(20px)',
+                      backgroundColor: (theme) =>
+                        theme.palette.mode === 'dark'
+                          ? 'rgba(3, 7, 18, 0.9)'
+                          : 'rgba(255, 255, 255, 0.9)',
+                      border: (theme) => `1px solid ${theme.custom.glow.primaryGlow(0.15)}`,
+                    },
+                  },
+                }}
+              >
+                {themeList.map((t) => (
+                  <MenuItem
+                    key={t.id}
+                    onClick={() => handleThemeSelect(t.id)}
+                    selected={t.id === themeId}
+                    sx={{
+                      py: 0.8,
+                      px: 2,
+                      fontSize: '0.875rem',
+                      fontFamily: t.typographyConfig.fonts.primary,
+                      fontWeight: t.id === themeId ? t.typographyConfig.weights.semiBold : t.typographyConfig.weights.regular,
+                      color: t.id === themeId ? 'text.primary' : 'text.disabled',
+                      '&:hover': {
+                        backgroundColor: (theme) => theme.custom.glow.primaryGlow(0.08),
+                        color: 'text.secondary',
+                      },
+                      '&.Mui-selected': {
+                        backgroundColor: (theme) => theme.custom.glow.primaryGlow(0.1),
+                        '&:hover': {
+                          backgroundColor: (theme) => theme.custom.glow.primaryGlow(0.12),
+                        },
+                      },
+                    }}
+                  >
+                    {t.name}
+                  </MenuItem>
+                ))}
+              </Menu>
+
+              {/* Dark/Light mode toggle */}
+              <IconButton
+                onClick={toggleTheme}
+                aria-label="Toggle light/dark theme"
+                sx={styles.themeToggle}
+              >
+                {darkMode ? (
+                  <Brightness7 fontSize="small" />
+                ) : (
+                  <Brightness4 fontSize="small" />
+                )}
+              </IconButton>
+            </Stack>
           </Toolbar>
         </Container>
       </AppBar>

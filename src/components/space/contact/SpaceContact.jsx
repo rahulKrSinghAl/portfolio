@@ -576,7 +576,7 @@ export default function SpaceContact() {
         >
           <Grid container spacing={3}>
             {/* Education Card */}
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Box component={motion.div} variants={cardVariants}>
                 <Tilt
                   tiltMaxAngleX={4}
@@ -664,7 +664,7 @@ export default function SpaceContact() {
             </Grid>
 
             {/* Achievements Card */}
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Box component={motion.div} variants={cardVariants}>
                 <Tilt
                   tiltMaxAngleX={4}
