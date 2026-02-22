@@ -1,9 +1,9 @@
 const typography = {
   fonts: {
-    primary: '"Satoshi", sans-serif',
-    secondary: '"Satoshi", sans-serif',
+    primary: '"SF Mono", "Fira Code", "Cascadia Code", monospace',
+    secondary: '"SF Mono", "Fira Code", "Cascadia Code", monospace',
     mono: '"SF Mono", "Fira Code", "Cascadia Code", monospace',
-    fallback: 'system-ui, sans-serif',
+    fallback: 'monospace',
   },
   weights: {
     light: 300,

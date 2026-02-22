@@ -7,6 +7,7 @@ import { useTheme } from '@mui/material/styles';
 import { keyframes } from '@mui/system';
 import { personalInfo } from '../../../data';
 import { usePrefersReducedMotion } from '../../../hooks/usePrefersReducedMotion';
+import { Logo } from '../../shared';
 
 const MotionBox = motion.create(Box);
 const MotionTypography = motion.create(Typography);
@@ -260,44 +261,7 @@ export default function SpaceHero() {
                 justifyContent: 'center',
               }}
             >
-              <Box
-                sx={{
-                  position: 'relative',
-                  width: { xs: '80px', sm: '100px', md: '120px' },
-                  height: { xs: '80px', sm: '100px', md: '120px' },
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Box
-                  component="img"
-                  src="/logo.svg"
-                  alt="RS Logo"
-                  sx={{
-                    width: '100%',
-                    height: '100%',
-                    filter: (theme) =>
-                      theme.palette.mode === 'dark'
-                        ? 'brightness(0) invert(1)'
-                        : 'brightness(0)',
-                    transition: 'filter 0.3s ease',
-                  }}
-                />
-                {/* Cyan accent dot - theme aware */}
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: { xs: '12px', sm: '15px', md: '18px' },
-                    right: { xs: '6px', sm: '8px', md: '10px' },
-                    width: { xs: '14px', sm: '18px', md: '22px' },
-                    height: { xs: '14px', sm: '18px', md: '22px' },
-                    backgroundColor: 'primary.main',
-                    borderRadius: '3px',
-                    boxShadow: (theme) => `0 0 16px ${theme.custom.glow.primaryGlow(0.8)}, 0 0 32px ${theme.custom.glow.primaryGlow(0.4)}`,
-                  }}
-                />
-              </Box>
+              <Logo size={{ xs: 120, sm: 160, md: 200 }} showGlow={true} />
             </MotionBox>
 
             {/* ---- Subtitle ---- */}

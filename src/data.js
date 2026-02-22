@@ -1,6 +1,6 @@
 // Portfolio data based on resume
 export const personalInfo = {
-  name: 'Rahul Kumar Singh',
+  name: 'Rahul Singh',
   title: 'Frontend Lead (React)',
   email: 'rahulkrsingh321998@gmail.com',
   phone: '+917906578023',

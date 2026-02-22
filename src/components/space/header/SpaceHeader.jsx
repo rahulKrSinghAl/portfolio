@@ -13,6 +13,8 @@ import {
 } from '@mui/material';
 import { Brightness4, Brightness7 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Logo } from '../../shared';
+import { personalInfo } from '../../../data';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -366,6 +368,11 @@ export default function SpaceHeader({ darkMode, toggleTheme }) {
 
   const styles = useSpaceHeaderStyles(theme, scrollProgress);
 
+  // Split name for display (e.g., "Rahul Kumar Singh" -> "Rahul Kumar" + "Singh")
+  const nameParts = personalInfo.name.split(' ');
+  const lastName = nameParts[nameParts.length - 1];
+  const firstName = nameParts.slice(0, -1).join(' ');
+
   const scrollToSection = useCallback((sectionId) => {
     const element = document.getElementById(sectionId);
     if (element) {
@@ -386,46 +393,10 @@ export default function SpaceHeader({ darkMode, toggleTheme }) {
           <Toolbar disableGutters sx={styles.toolbar}>
             {/* ---- Logo ---- */}
             <Box sx={styles.logoContainer} onClick={scrollToTop}>
-              <Box
-                sx={{
-                  position: 'relative',
-                  width: '56px',
-                  height: '56px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Box
-                  component="img"
-                  src="/logo.svg"
-                  alt="RS Logo"
-                  sx={{
-                    width: '100%',
-                    height: '100%',
-                    filter: (theme) =>
-                      theme.palette.mode === 'dark'
-                        ? 'brightness(0) invert(1)'
-                        : 'brightness(0)',
-                  }}
-                />
-                {/* Red accent dot */}
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: '8px',
-                    right: '2px',
-                    width: '10px',
-                    height: '10px',
-                    backgroundColor: (theme) => theme.palette.primary.main,
-                    borderRadius: '2px',
-                    boxShadow: (theme) => `0 0 8px ${theme.custom.glow.primaryGlow(0.6)}`,
-                  }}
-                />
-              </Box>
+              <Logo size={64} showGlow={false} />
               <Box sx={styles.logoTextContainer}>
-                <Box sx={styles.logoText}>Rahul Kumar</Box>
-                <Box sx={styles.logoSubtext}>Singh</Box>
+                <Box sx={styles.logoText}>{firstName}</Box>
+                <Box sx={styles.logoSubtext}>{lastName}</Box>
               </Box>
             </Box>
 

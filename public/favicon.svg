@@ -1,33 +1,22 @@
-<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="favGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#E63946;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#F4A261;stop-opacity:1" />
-    </linearGradient>
-  </defs>
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN"
+ "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+<svg version="1.0" xmlns="http://www.w3.org/2000/svg"
+ width="512" height="512" viewBox="420 0 580 560"
+ preserveAspectRatio="xMidYMid meet">
 
-  <!-- Background -->
-  <rect width="64" height="64" fill="#000000"/>
-
-  <!-- Japanese character background -->
-  <text x="32" y="28"
-        font-family="'Noto Sans JP', sans-serif"
-        font-size="45"
-        font-weight="700"
-        fill="#E63946"
-        opacity="0.12"
-        text-anchor="middle">開</text>
-
-  <!-- Main circle -->
-  <circle cx="32" cy="32" r="24"
-          fill="url(#favGradient)"/>
-
-  <!-- RKS text -->
-  <text x="32" y="37"
-        font-family="'Zen Kaku Gothic New', sans-serif"
-        font-size="16"
-        font-weight="700"
-        fill="#FFFFFF"
-        text-anchor="middle"
-        letter-spacing="1">RKS</text>
+<g transform="translate(0,1024) scale(0.14,-0.14)" stroke="none">
+<!-- Main RS logo shapes - white -->
+<path fill="#FFFFFF" d="M3360 5533 l0 -1747 268 274 267 273 5 1201 5 1201 920 3 919 2 -124
+-128 c-69 -70 -172 -175 -229 -234 l-104 -108 -538 0 -539 -1 2 -516 3 -517
+315 -193 c173 -106 380 -232 460 -281 l144 -87 746 -5 745 -5 -3 -65 c-7 -127
+-67 -237 -164 -303 -103 -69 -68 -67 -1005 -67 l-843 0 -2 263 -3 262 -545
+-542 -545 -543 1480 3 1480 2 74 23 c289 89 478 252 576 496 60 148 65 200 65
+672 l0 424 -995 0 -994 0 -226 137 -225 138 0 92 0 93 368 0 367 0 473 473
+472 472 0 293 0 292 -1535 0 -1535 0 0 -1747z"/>
+<!-- Accent square - white -->
+<path fill="#FFFFFF" d="M6590 6965 l0 -305 305 0 305 0 0 305 0 305 -305 0 -305 0 0 -305z"/>
+<path fill="#FFFFFF" d="M6105 6138 c-72 -73 -186 -190 -255 -260 l-125 -128 733 0 732 0 0
+260 0 260 -478 0 -477 0 -130 -132z"/>
+</g>
 </svg>
